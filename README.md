@@ -1,6 +1,6 @@
-# OpenF1 Dashboard (macOS 26.4 Widget)
+# OpenF1 Dashboard (Unified Apple: macOS + iOS Widgets)
 
-A WidgetKit-based macOS widget that follows the same product and reliability principles as `openf1-gnome-extension`:
+A WidgetKit-based Apple-platform widget project that follows the same product and reliability principles as `openf1-gnome-extension`:
 
 1. **Calendar**
    - Upcoming **non-canceled** race weekend
@@ -27,9 +27,10 @@ License: **GPL-3.0-or-later** (`LICENSE`)
 ## Compatibility
 
 - **macOS 26.4+** (WidgetKit target)
+- **iOS 17+** (WidgetKit target)
 - SwiftUI + WidgetKit + AppIntents
 
-> Note: You create this in Xcode as a macOS app with a widget extension, then copy these source files into the app/widget targets.
+> The repo is organized for a unified Apple approach: shared logic + platform-specific app/widget targets.
 
 ---
 
@@ -40,18 +41,30 @@ openf1-macos-widget/
   OpenF1Shared/
     OpenF1Models.swift
     OpenF1Service.swift
+
+  # macOS runtime sources
+  OpenF1HostApp/
+    OpenF1HostApp.swift
   OpenF1Widget/
     OpenF1Widget.swift
     RefreshNowIntent.swift
-  OpenF1HostApp/
-    OpenF1HostApp.swift
+
+  # iOS runtime sources
+  OpenF1iOSHostApp/
+    OpenF1iOSHostApp.swift
+  OpenF1iOSWidget/
+    OpenF1iOSWidget.swift
+    RefreshNowIntent.swift
+
   XcodeProjectTemplate/
     project.yml
     SETUP_CHECKLIST.md
     Scripts/generate_xcodeproj.sh
     Config/*.plist + *.entitlements
-    OpenF1DashboardApp/*
-    OpenF1DashboardWidget/*
+    OpenF1DashboardApp/*          # macOS host app
+    OpenF1DashboardWidget/*       # macOS widget
+    OpenF1DashboardiOSApp/*       # iOS host app
+    OpenF1DashboardiOSWidget/*    # iOS widget
     OpenF1Shared/*
 ```
 
@@ -59,7 +72,7 @@ If you want the fastest setup path, use `XcodeProjectTemplate/` directly.
 
 ---
 
-## Setup in Xcode
+## Setup in Xcode (unified)
 
 ### Option A (recommended): Ready-to-import template
 
@@ -74,23 +87,34 @@ Then follow:
 
 ### Option B: Manual integration
 
-1. Create a new **macOS App** project (SwiftUI lifecycle).
-2. Add a **Widget Extension** target.
-3. Add an **App Group** capability to both targets (example: `group.com.example.openf1widget`).
-4. Copy files from this folder into your project:
-   - `OpenF1Shared/*` into a shared group included in both app + widget targets
-   - `OpenF1Widget/*` into widget target
-   - `OpenF1HostApp/*` into app target
-5. In `OpenF1Service.swift`, replace:
-   - `AppGroupConfig.identifier`
-   with your real App Group identifier.
-6. Build and run the app, then add the widget from macOS widget gallery.
+1. Create Apple app targets + widget extension targets for macOS and iOS.
+2. Add an **App Group** capability to all app/widget targets (same group across all four).
+3. Copy files from this folder into your project:
+   - `OpenF1Shared/*` into a shared group included in all targets
+   - `OpenF1Widget/*` + `OpenF1HostApp/*` for macOS targets
+   - `OpenF1iOSWidget/*` + `OpenF1iOSHostApp/*` for iOS targets
+4. In `OpenF1Service.swift`, replace `AppGroupConfig.identifier` with your real App Group identifier.
+5. Build/run host apps, then add widgets from the corresponding widget galleries.
+
+---
+
+## Shared architecture (industry-standard Apple pattern)
+
+- **Shared core module** (`OpenF1Shared`)
+  - Models, OpenF1 networking, cache envelope, standings aggregation, refresh policy
+- **Platform-specific UI targets**
+  - macOS app + widget
+  - iOS app + widget
+- **Single App Group-backed cache**
+  - Enables shared widget/app refresh flags and persistent endpoint cache per platform app suite
+
+This keeps behavior aligned while allowing per-platform UI tuning.
 
 ---
 
 ## Security review (OWASP Top 10 aligned)
 
-This widget is a local macOS UI client with outbound HTTPS requests to OpenF1. It does not process credentials, auth tokens, payments, or arbitrary user-provided query input. The implementation applies OWASP-aligned controls:
+This project is a local Apple UI client with outbound HTTPS requests to OpenF1. It does not process credentials, auth tokens, payments, or arbitrary user-provided query input. The implementation applies OWASP-aligned controls:
 
 ### A01 Broken Access Control
 - No privileged backend actions or role/authorization model in scope.
@@ -116,7 +140,7 @@ This widget is a local macOS UI client with outbound HTTPS requests to OpenF1. I
 - App Group scope is explicit and must be configured by developer.
 
 ### A06 Vulnerable and Outdated Components
-- Keep macOS/Xcode/SDK dependencies updated.
+- Keep macOS/iOS/Xcode/SDK dependencies updated.
 - No bundled third-party runtime packages in this source pack.
 
 ### A07 Identification and Authentication Failures
@@ -146,7 +170,7 @@ This widget is a local macOS UI client with outbound HTTPS requests to OpenF1. I
 
 ## Design parity with GNOME extension
 
-This widget preserves the same core behavior:
+This project preserves the same core behavior:
 
 - Skip fully canceled weekends
 - Show next meaningful event/session
@@ -159,7 +183,7 @@ This widget preserves the same core behavior:
 
 ## Manual refresh
 
-The widget supports a `Refresh Now` App Intent (`RefreshNowIntent`) that:
+Widgets support a `Refresh Now` App Intent (`RefreshNowIntent`) that:
 
 - sets a `force-refresh` flag in shared defaults
 - calls `WidgetCenter.shared.reloadAllTimelines()`
@@ -168,18 +192,18 @@ The next timeline build consumes that flag and forces API refresh.
 
 ---
 
-## Validation and diagnostics (macOS)
+## Validation and diagnostics
 
 1. **Widget timeline refresh checks**
-   - Add widget to desktop/Notification Center.
-   - Trigger `Refresh Now` intent and verify the widget updates.
+   - Add widgets on macOS and iOS.
+   - Trigger `Refresh Now` intent and verify updates.
 
 2. **Xcode runtime logs**
-   - Run host app + widget extension from Xcode.
+   - Run host app + widget extension for each platform.
    - Inspect console for network failures, decoding failures, and timeline reload behavior.
 
-3. **Unified logging (Console.app)**
-   - Open **Console.app** and filter by process/bundle identifier for host app and widget extension.
+3. **Unified logging**
+   - Use Console.app / device logs filtered by bundle identifiers.
    - Verify no sensitive payloads are printed and failures remain generic.
 
 4. **Network behavior checks**
@@ -194,4 +218,4 @@ The next timeline build consumes that flag and forces API refresh.
 - `PROMPT.md` — minimal meaningful prompt to reproduce this outcome
 - `SECURITY_OWASP_TOP10.md` — OWASP Top 10 security assessment
 - `TECHNOLOGIES.md` — technology inventory
-- `CLI_BUILD_MACOS.md` — CLI build/install/registration steps on macOS
+- `CLI_BUILD_MACOS.md` — macOS CLI build/install/registration steps

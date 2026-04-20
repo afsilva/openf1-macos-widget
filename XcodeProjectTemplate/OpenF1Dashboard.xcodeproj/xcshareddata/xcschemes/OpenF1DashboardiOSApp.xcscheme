@@ -15,9 +15,9 @@
             buildForAnalyzing = "YES">
             <BuildableReference
                BuildableIdentifier = "primary"
-               BlueprintIdentifier = "94DC029AF68F137B19BDAC42"
-               BuildableName = "OpenF1DashboardApp.app"
-               BlueprintName = "OpenF1DashboardApp"
+               BlueprintIdentifier = "9E502B7F8AF4172B7DE19845"
+               BuildableName = "OpenF1DashboardiOSApp.app"
+               BlueprintName = "OpenF1DashboardiOSApp"
                ReferencedContainer = "container:OpenF1Dashboard.xcodeproj">
             </BuildableReference>
          </BuildActionEntry>
@@ -32,9 +32,9 @@
       <MacroExpansion>
          <BuildableReference
             BuildableIdentifier = "primary"
-            BlueprintIdentifier = "94DC029AF68F137B19BDAC42"
-            BuildableName = "OpenF1DashboardApp.app"
-            BlueprintName = "OpenF1DashboardApp"
+            BlueprintIdentifier = "9E502B7F8AF4172B7DE19845"
+            BuildableName = "OpenF1DashboardiOSApp.app"
+            BlueprintName = "OpenF1DashboardiOSApp"
             ReferencedContainer = "container:OpenF1Dashboard.xcodeproj">
          </BuildableReference>
       </MacroExpansion>
@@ -57,9 +57,9 @@
          runnableDebuggingMode = "0">
          <BuildableReference
             BuildableIdentifier = "primary"
-            BlueprintIdentifier = "94DC029AF68F137B19BDAC42"
-            BuildableName = "OpenF1DashboardApp.app"
-            BlueprintName = "OpenF1DashboardApp"
+            BlueprintIdentifier = "9E502B7F8AF4172B7DE19845"
+            BuildableName = "OpenF1DashboardiOSApp.app"
+            BlueprintName = "OpenF1DashboardiOSApp"
             ReferencedContainer = "container:OpenF1Dashboard.xcodeproj">
          </BuildableReference>
       </BuildableProductRunnable>
@@ -76,9 +76,9 @@
          runnableDebuggingMode = "0">
          <BuildableReference
             BuildableIdentifier = "primary"
-            BlueprintIdentifier = "94DC029AF68F137B19BDAC42"
-            BuildableName = "OpenF1DashboardApp.app"
-            BlueprintName = "OpenF1DashboardApp"
+            BlueprintIdentifier = "9E502B7F8AF4172B7DE19845"
+            BuildableName = "OpenF1DashboardiOSApp.app"
+            BlueprintName = "OpenF1DashboardiOSApp"
             ReferencedContainer = "container:OpenF1Dashboard.xcodeproj">
          </BuildableReference>
       </BuildableProductRunnable>

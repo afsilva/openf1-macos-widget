@@ -1,91 +1,93 @@
-# App Store Deployment Guide (macOS)
+# App Store Deployment Guide (Unified Apple: macOS + iOS)
 
-This guide is tailored for `openf1-macos-widget`.
+This guide is tailored for `openf1-macos-widget` in its unified Apple configuration.
 
 ## 1) Apple Developer prerequisites
 - Active Apple Developer Program membership
 - App Store Connect access for your team
-- A unique bundle ID for app and widget extension
+- Unique bundle IDs for all targets
+  - macOS app + widget
+  - iOS app + widget
 
-## 2) App identity and signing
-In Xcode (project + both targets):
+## 2) Identity, signing, and capabilities
+In Xcode, for all targets:
 - Team: your paid developer team
 - Signing: Automatic (recommended)
-- App target bundle ID: e.g. `com.afsilva.OpenF1DashboardApp`
-- Widget target bundle ID: e.g. `com.afsilva.OpenF1DashboardApp.widget`
-- Ensure entitlements are valid for distribution:
-  - app sandbox enabled
-  - network client enabled
-  - app group only if actually used and consistently configured
+- Set production bundle IDs (replace template `com.example.*` values)
+
+### Required capabilities
+- **App Groups** on all app/widget targets with same group ID (example):
+  - `group.com.yourorg.openf1widget`
+
+- **macOS app + widget only**:
+  - App Sandbox enabled
+  - Outbound Network Client enabled
 
 ## 3) Versioning
 Before each submission:
 - Increase `CFBundleShortVersionString` (marketing version)
 - Increase `CFBundleVersion` (build number)
-- Keep app and widget versions aligned
+- Keep app + widget versions aligned per platform
 
 ## 4) App Store Connect setup
-Create app in App Store Connect:
-- Platform: macOS
-- Name: OpenF1Dashboard
-- Primary language, SKU, bundle ID
-Then fill:
+Create app records in App Store Connect:
+- macOS app record
+- iOS app record
+
+Fill metadata:
 - App description
 - Keywords
 - Support URL / marketing URL
 - Privacy policy URL
 
 ## 5) Privacy and compliance
-- Complete App Privacy questionnaire in App Store Connect
-- If app collects no personal data, declare accordingly
-- Export compliance: likely "No" for proprietary encryption (TLS via system APIs), confirm in submission workflow
+- Complete App Privacy questionnaire for each platform app record
+- If collecting no personal data, declare accordingly
+- Export compliance: usually "No" for custom crypto (uses platform TLS), confirm during submission
 
 ## 6) Archive and validate
-In Xcode:
+### macOS
 - Scheme: `OpenF1DashboardApp`
 - Destination: Any Mac (Archive)
 - Product -> Archive
+
+### iOS
+- Scheme: `OpenF1DashboardiOSApp`
+- Destination: Any iOS Device (Archive)
+- Product -> Archive
+
 In Organizer:
-- Validate App
-- Resolve any signing/capability/warning issues
+- Validate each archive
+- Resolve signing/capability warnings
 
 ## 7) Upload build
 From Organizer:
 - Distribute App -> App Store Connect -> Upload
-- Wait for processing in App Store Connect
+- Wait for processing for each platform
 
 ## 8) Metadata and screenshots
-Provide:
-- macOS screenshots (required sizes)
-- App icon (already prepared)
-- Category and content rights info
-- "What’s New" text for each release
+Provide required screenshots for each platform/device class.
+Ensure icon and widget screenshots reflect final UX.
 
 ## 9) TestFlight (recommended)
-- Enable internal testing first
+- Start with internal testing (both iOS + macOS builds)
 - Verify widget behavior after install/update
-- Confirm no stale widget registrations from dev builds
+- Verify refresh flow and offline fallback behavior
 
 ## 10) Submit for review
-- Select processed build
-- Complete all required compliance/privacy fields
-- Submit for review
+- Select processed builds
+- Complete compliance/privacy fields
+- Submit each platform app for review
 
 ---
 
-## Project-specific pre-submit checklist
-- [ ] Only one widget family intended (`.systemLarge`) and visible in gallery
-- [ ] Widget listing icon appears correctly
-- [ ] Refresh behavior stable (cache-first, no rapid retry loops)
-- [ ] App launches without Xcode attached
-- [ ] No debug-only strings left (build stamps optional by your choice)
-- [ ] Remove any local/dev artifacts from release branch
-- [ ] Widget registration path is installed-app only (no active `DerivedData` registration)
-
----
-
-## Optional next step
-I can generate a release-ready checklist for your exact current branch, including:
-- exact version numbers to set,
-- final metadata text draft,
-- and a submission-day runbook.
+## Unified pre-submit checklist
+- [ ] Bundle IDs are production values (no `com.example.*`)
+- [ ] App Group configured consistently across all 4 targets
+- [ ] `AppGroupConfig.identifier` updated to production group in shared code
+- [ ] Widget tap-through behavior matches product intent
+- [ ] iOS medium and large widget readability verified on-device
+- [ ] macOS widget readability verified on latest supported macOS
+- [ ] No debug-only strings/build stamps left unintentionally
+- [ ] No dev artifacts or stale simulator-only registrations
+- [ ] OWASP checklist reviewed (`SECURITY_OWASP_TOP10.md`)
