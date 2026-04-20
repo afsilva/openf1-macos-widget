@@ -75,9 +75,10 @@ struct OpenF1WidgetView: View {
             }
 
             Text(entry.model.subtitle)
-                .font(.system(size: 10, weight: .regular, design: .monospaced))
-                .foregroundStyle(.secondary)
+                .font(.system(size: 12, weight: .semibold, design: .monospaced))
+                .foregroundStyle(.secondary.opacity(0.95))
                 .lineLimit(1)
+                .minimumScaleFactor(0.9)
 
             Text("Build \(buildStamp)")
                 .font(.system(size: 8, weight: .regular, design: .monospaced))
