@@ -121,7 +121,7 @@ public struct OpenF1Service {
             sessions = endpointDecode(query: sessionsQ, maxAge: 7 * 24 * 60 * 60, cache: cache) ?? []
         }
 
-        let cal = buildCalendarView(meetings: meetings, sessions: sessions, now: now, lastRefreshTs: cache.meta.lastRefreshTs, source: cache.meta.lastRefreshSource)
+        let cal = buildCalendarView(meetings: meetings, sessions: sessions, now: now)
 
         var standingsDrivers: [StandingDriver] = []
         var standingsTeams: [StandingTeam] = []
@@ -162,15 +162,13 @@ public struct OpenF1Service {
         let driverRows = formatDriverRows(standingsDrivers)
         let teamRows = formatTeamRows(standingsTeams)
 
-        if !meetings.isEmpty, !sessions.isEmpty {
-            let interval = isRaceWeekend(meetings: meetings, sessions: sessions, now: now)
-                ? OpenF1Config.refreshWeekendSeconds
-                : OpenF1Config.refreshWeekSeconds
-            cache.meta.refreshInterval = interval
-            cache.meta.lastRefreshTs = now.timeIntervalSince1970
-            cache.meta.lastRefreshSource = apiUsed ? "API" : "CACHE"
-            saveCache(cache)
-        }
+        let interval = (!meetings.isEmpty && !sessions.isEmpty && isRaceWeekend(meetings: meetings, sessions: sessions, now: now))
+            ? OpenF1Config.refreshWeekendSeconds
+            : OpenF1Config.refreshWeekSeconds
+        cache.meta.refreshInterval = interval
+        cache.meta.lastRefreshTs = now.timeIntervalSince1970
+        cache.meta.lastRefreshSource = apiUsed ? "API" : "CACHE"
+        saveCache(cache)
 
         let model = WidgetViewModel(
             panelTitle: cal.title,
@@ -185,8 +183,8 @@ public struct OpenF1Service {
         cache.lastGoodModel = model
         saveCache(cache)
 
-        let interval = max(cache.meta.refreshInterval, 15 * 60)
-        return DashboardPayload(model: model, refreshInterval: interval)
+        let nextRefreshInterval = max(cache.meta.refreshInterval, 15 * 60)
+        return DashboardPayload(model: model, refreshInterval: nextRefreshInterval)
 
         // Fallback: if we reached here without returning (e.g., unexpected early exit), use last good model or a static placeholder.
         let fallbackCache = loadCache()
@@ -217,9 +215,7 @@ public struct OpenF1Service {
     private func buildCalendarView(
         meetings: [Meeting],
         sessions: [Session],
-        now: Date,
-        lastRefreshTs: TimeInterval,
-        source: String
+        now: Date
     ) -> (title: String, subtitle: String, rows: [CalendarRow]) {
         guard !meetings.isEmpty, !sessions.isEmpty else {
             return (
@@ -306,7 +302,6 @@ public struct OpenF1Service {
         let name = sanitize(meeting.meeting_name ?? "Race Weekend")
 
         var rows: [CalendarRow] = []
-        rows.append(.init(text: "Last updated: \(formattedRefresh(ts: lastRefreshTs)) (\(source))", dim: true))
         rows.append(.init(text: "Sessions (Local / UTC / System):", dim: true))
 
         let tz = meeting.gmt_offset ?? "+00:00"
