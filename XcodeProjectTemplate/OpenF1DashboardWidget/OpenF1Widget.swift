@@ -129,6 +129,7 @@ struct OpenF1WidgetView: View {
         }
         .padding(8)
         .containerBackground(.background, for: .widget)
+        .widgetURL(nil)
         .overlay(
             RoundedRectangle(cornerRadius: 14)
                 .stroke(.white.opacity(0.12), lineWidth: 0.6)

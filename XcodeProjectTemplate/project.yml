@@ -4,6 +4,7 @@ options:
   createIntermediateGroups: true
   deploymentTarget:
     macOS: "26.4"
+    iOS: "17.0"
 configs:
   Debug: debug
   Release: release
@@ -23,6 +24,11 @@ targets:
       path: Config/OpenF1DashboardApp-Info.plist
     entitlements:
       path: Config/OpenF1DashboardApp.entitlements
+      properties:
+        com.apple.security.app-sandbox: true
+        com.apple.security.network.client: true
+        com.apple.security.application-groups:
+          - group.com.afsilva.openf1widget
     sources:
       - path: OpenF1DashboardApp
       - path: OpenF1Shared
@@ -48,8 +54,19 @@ targets:
     deploymentTarget: "26.4"
     info:
       path: Config/OpenF1DashboardWidget-Info.plist
+      properties:
+        NSExtension:
+          NSExtensionAttributes:
+            WKAppBundleIdentifier: "$(OPENF1_HOST_APP_BUNDLE_IDENTIFIER)"
+          NSExtensionPointIdentifier: com.apple.widgetkit-extension
+          NSExtensionPrincipalClass: "$(PRODUCT_MODULE_NAME).OpenF1WidgetBundle"
     entitlements:
       path: Config/OpenF1DashboardWidget.entitlements
+      properties:
+        com.apple.security.app-sandbox: true
+        com.apple.security.network.client: true
+        com.apple.security.application-groups:
+          - group.com.afsilva.openf1widget
     sources:
       - path: OpenF1DashboardWidget
       - path: OpenF1Shared
@@ -62,6 +79,68 @@ targets:
         OPENF1_HOST_APP_BUNDLE_IDENTIFIER: com.example.OpenF1DashboardApp
         APPLICATION_EXTENSION_API_ONLY: YES
         ENABLE_APP_SANDBOX: YES
+        SKIP_INSTALL: YES
+        CODE_SIGN_STYLE: Automatic
+        CODE_SIGN_IDENTITY: Apple Development
+
+  OpenF1DashboardiOSApp:
+    type: application
+    platform: iOS
+    deploymentTarget: "17.0"
+    info:
+      path: Config/OpenF1DashboardiOSApp-Info.plist
+    entitlements:
+      path: Config/OpenF1DashboardiOSApp.entitlements
+      properties:
+        com.apple.security.application-groups:
+          - group.com.afsilva.openf1widget
+    sources:
+      - path: OpenF1DashboardiOSApp
+      - path: OpenF1Shared
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.example.OpenF1DashboardiOSApp
+        PRODUCT_NAME: OpenF1DashboardiOS
+        GENERATE_INFOPLIST_FILE: NO
+        INFOPLIST_FILE: Config/OpenF1DashboardiOSApp-Info.plist
+        TARGETED_DEVICE_FAMILY: "1,2"
+        CODE_SIGN_STYLE: Automatic
+        CODE_SIGN_IDENTITY: Apple Development
+    dependencies:
+      - target: OpenF1DashboardiOSWidget
+        embed: true
+        codeSign: true
+    scheme:
+      testTargets: []
+
+  OpenF1DashboardiOSWidget:
+    type: app-extension
+    platform: iOS
+    deploymentTarget: "17.0"
+    info:
+      path: Config/OpenF1DashboardiOSWidget-Info.plist
+      properties:
+        NSExtension:
+          NSExtensionAttributes:
+            WKAppBundleIdentifier: "$(OPENF1_HOST_APP_BUNDLE_IDENTIFIER)"
+          NSExtensionPointIdentifier: com.apple.widgetkit-extension
+    entitlements:
+      path: Config/OpenF1DashboardiOSWidget.entitlements
+      properties:
+        com.apple.security.application-groups:
+          - group.com.afsilva.openf1widget
+    sources:
+      - path: OpenF1DashboardiOSWidget
+      - path: OpenF1Shared
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.example.OpenF1DashboardiOSApp.widget
+        PRODUCT_NAME: OpenF1DashboardiOSWidget
+        GENERATE_INFOPLIST_FILE: NO
+        INFOPLIST_FILE: Config/OpenF1DashboardiOSWidget-Info.plist
+        OPENF1_HOST_APP_BUNDLE_IDENTIFIER: com.example.OpenF1DashboardiOSApp
+        APPLICATION_EXTENSION_API_ONLY: YES
+        TARGETED_DEVICE_FAMILY: "1,2"
         SKIP_INSTALL: YES
         CODE_SIGN_STYLE: Automatic
         CODE_SIGN_IDENTITY: Apple Development

@@ -1,108 +1,76 @@
 # Release Notes
 
-## OpenF1 Dashboard (macOS Widget) — Final Delivery
+## OpenF1 Dashboard — Unified Apple Release (macOS + iOS)
 
 Date: 2026-04-20
 
 ## Highlights
 
-- Delivered a macOS WidgetKit implementation aligned to the original `openf1-gnome-extension` behavior.
-- Stabilized widget registration and packaging so one clean widget extension is active.
-- Improved UI density and readability for sessions + standings.
-- Finalized icon pipeline for both app and widget listing behavior.
-- Added security, licensing, and CLI build documentation.
+- Evolved the project from macOS-only into a **unified Apple platform setup**.
+- Added iOS host app + iOS widget extension while preserving shared behavior.
+- Kept shared data/service logic in `OpenF1Shared` for consistency across platforms.
+- Added iOS widget family support for:
+  - `.systemLarge` (full dashboard)
+  - `.systemMedium` (summarized dashboard)
+- Synced iOS app icon set with macOS icon source for cross-platform visual consistency.
+- Disabled default widget tap-through (`.widgetURL(nil)`) so only manual refresh control is interactive.
 
 ---
 
-## Functional Changes
+## Functional behavior
 
-### Widget behavior and data
-- Data source: OpenF1 API (`meetings`, `sessions`, `session_result`, `drivers`)
-- Race-weekend logic and next-session selection aligned to GNOME principles
-- Canceled weekend/session handling preserved
-- Standings built from race/sprint session results with driver/team enrichment
-- Added resilience for partial API failures (avoid all-or-nothing blank states)
-- Added fallback to last-known-good model for smoother refresh behavior
+### Data source and model
+- OpenF1 API endpoints: `meetings`, `sessions`, `session_result`, `drivers`
+- Same race-weekend/next-session behavior as GNOME reference implementation
+- Canceled session/weekend filtering retained
+- Driver and constructor standings aggregated from race-like sessions
 
-### Refresh and caching
-- Cache-first retrieval model with bounded cache controls
-- Refresh cadence:
-  - Daily off-weekend
+### Cache/refresh
+- Cache-first retrieval
+- Adaptive refresh policy:
+  - Daily off-race-weekend
   - Hourly during/near race weekend
-- Manual refresh via App Intent (`RefreshNowIntent`)
+- Manual refresh via AppIntent (`RefreshNowIntent`)
+- Last-known-good fallback model for degraded network/API periods
 
 ### Widget UX
-- Single supported family: `.systemLarge`
-- Compact, consistent monospaced typography
-- Session row font reduced for better space utilization
-- Standings density improved
-- Subtle border maintained
-- Build stamp rendered in-widget for runtime verification
+- macOS: `.systemLarge`
+- iOS: `.systemLarge` + `.systemMedium`
+- Medium iOS layout is intentionally summarized to avoid truncation
+- App launch tap-through disabled at widget root; explicit refresh button remains
 
 ---
 
-## Standings Display Update
+## Security and compliance
 
-- Drivers list expanded target to full championship set (22 entries)
-- Teams list expanded target to full constructor set (11 entries)
-- Driver rows rendered in compact paired layout for fit on large card
-- Team rows rendered fully in right column
+Status: **OWASP Top 10 PASS (2021 mapping)**
 
----
-
-## Icon and Packaging Fixes
-
-### App icon
-- Regenerated readable icon style: “Open” on first line, “F1” on second line
-- Full app icon asset set updated in `AppIcon.appiconset`
-
-### Widget listing icon
-- Fixed extension-side icon packaging:
-  - Added icon keys to widget extension Info.plist
-  - Added widget resource phase for asset catalog
-  - Enabled app icon compilation for widget target
-- Cleaned stale registrations and re-registered installed app extension
-
----
-
-## Security Review (OWASP Top 10)
-
-Status: **PASS (with low-risk notes)**
-
-Implemented controls include:
-- HTTPS-only host
+Notable verified controls:
+- HTTPS-only fixed OpenF1 host
 - Endpoint allowlist + query validation
-- Sanitized UI output
-- Typed decoding and bounded response size
-- Bounded cache sizes/entries
-- Sandboxing and network client entitlements
-- Graceful failure behavior without sensitive output exposure
+- Sanitized UI text output
+- Bounded response and cache sizes
+- Typed model decoding (`Codable`)
+- App Group-backed shared cache/refresh flag path
+- Sandboxing/network entitlements (macOS) and app-group entitlements (iOS/macOS)
 
-See full assessment: `SECURITY_OWASP_TOP10.md`
-
----
-
-## Licensing and Docs
-
-- License updated to **GPL-3.0-or-later** (`LICENSE`)
-- Minimal meaningful regeneration prompt documented (`PROMPT.md`)
-- Technology inventory documented (`TECHNOLOGIES.md`)
-- macOS CLI build/install/registration flow documented (`CLI_BUILD_MACOS.md`)
+See: `SECURITY_OWASP_TOP10.md`
 
 ---
 
-## Build and Distribution Notes
+## Build verification snapshot
 
-- Canonical project path: `openf1-macos-widget/XcodeProjectTemplate/`
-- Build via `xcodebuild` (documented in `CLI_BUILD_MACOS.md`)
-- Recommended install target: `~/Applications/OpenF1Dashboard.app`
-- Verify single active widget registration via `pluginkit`
+Validated via CLI/Xcode tooling on this branch:
+- `xcodegen generate` for unified project
+- iOS compile/build validation
+- macOS compile validation (`CODE_SIGNING_ALLOWED=NO` in local CLI environment)
+- Simulator install/launch checks for iOS host app + widget flow
 
 ---
 
-## Final Acceptance Snapshot
+## Documentation updates included
 
-- Widget appears in gallery and runs
-- Data rendering is stable and GNOME-aligned
-- Icon is readable in app context
-- Documentation and licensing finalized for handoff
+- `README.md` updated to unified architecture and setup
+- `XcodeProjectTemplate/SETUP_CHECKLIST.md` updated for all four targets
+- `SECURITY_OWASP_TOP10.md` reviewed for unified platform controls
+- `APP_STORE_DEPLOYMENT.md` updated for iOS + macOS packaging guidance
