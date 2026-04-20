@@ -52,24 +52,9 @@ struct OpenF1Provider: AppIntentTimelineProvider {
 struct OpenF1WidgetView: View {
     var entry: OpenF1Provider.Entry
 
-    private let sessionFont = Font.system(size: 10, weight: .regular, design: .monospaced)
-    private let standingsFont = Font.system(size: 11, weight: .regular, design: .monospaced)
-    private let sectionHeaderFont = Font.system(size: 11, weight: .semibold, design: .monospaced)
-
-    private func fit(_ s: String, width: Int) -> String {
-        if s.count == width { return s }
-        if s.count < width { return s + String(repeating: " ", count: width - s.count) }
-        guard width > 1 else { return String(s.prefix(1)) }
-        return String(s.prefix(width - 1)) + "…"
-    }
-
-    private func pairedDriverRows(_ rows: [String]) -> [String] {
-        stride(from: 0, to: rows.count, by: 2).map { i in
-            let left = fit(rows[i], width: 24)
-            let right = (i + 1 < rows.count) ? fit(rows[i + 1], width: 24) : ""
-            return right.isEmpty ? left : left + "  " + right
-        }
-    }
+    private let sessionFont = Font.system(size: 9, weight: .regular, design: .monospaced)
+    private let standingsFont = Font.system(size: 10, weight: .regular, design: .monospaced)
+    private let sectionHeaderFont = Font.system(size: 10, weight: .semibold, design: .monospaced)
 
     var body: some View {
         VStack(alignment: .leading, spacing: 4) {
@@ -104,10 +89,10 @@ struct OpenF1WidgetView: View {
             let contextRows = Array(entry.model.calendarRows.prefix(2))
             let detectedSessionRows = entry.model.calendarRows.filter {
                 let t = $0.text
-                return t.contains(":") && (t.contains("➡") || t.contains("•") || t.contains("/"))
+                return (t.contains("➡") || t.contains("•")) && t.contains(":") && t.contains("/")
             }
-            let sessionRows = Array(detectedSessionRows.prefix(4))
-            let rowsToShow = sessionRows.isEmpty ? Array(entry.model.calendarRows.prefix(6)) : (contextRows + sessionRows)
+            let sessionRows = Array(detectedSessionRows.prefix(8))
+            let rowsToShow = sessionRows.isEmpty ? Array(entry.model.calendarRows.prefix(10)) : (contextRows + sessionRows)
 
             ForEach(rowsToShow, id: \.self) { row in
                 Text(row.text)
@@ -119,13 +104,11 @@ struct OpenF1WidgetView: View {
 
             Divider()
 
-            let pairedDriverRows = pairedDriverRows(entry.model.driverRows)
-
             HStack(alignment: .top, spacing: 10) {
                 VStack(alignment: .leading, spacing: 1) {
-                    Text("Drivers (22)")
+                    Text("Drivers")
                         .font(sectionHeaderFont)
-                    ForEach(pairedDriverRows, id: \.self) { line in
+                    ForEach(entry.model.driverRows.prefix(10), id: \.self) { line in
                         Text(line)
                             .font(.system(size: 10, weight: .regular, design: .monospaced))
                             .lineLimit(1)
@@ -133,9 +116,9 @@ struct OpenF1WidgetView: View {
                     }
                 }
                 VStack(alignment: .leading, spacing: 1) {
-                    Text("Teams (11)")
+                    Text("Teams")
                         .font(sectionHeaderFont)
-                    ForEach(entry.model.teamRows, id: \.self) { line in
+                    ForEach(entry.model.teamRows.prefix(11), id: \.self) { line in
                         Text(line)
                             .font(standingsFont)
                             .lineLimit(1)

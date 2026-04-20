@@ -68,143 +68,142 @@ public struct OpenF1Service {
     // MARK: - Public API
 
     public func buildDashboard(force: Bool = false, now: Date = Date()) async -> DashboardPayload {
-        do {
-            var cache = loadCache()
-            let year = Calendar.current.component(.year, from: now)
+        var cache = loadCache()
+        let year = Calendar.current.component(.year, from: now)
 
-            let meetingsQ = "meetings?year=\(year)"
-            let sessionsQ = "sessions?year=\(year)"
+        let meetingsQ = "meetings?year=\(year)"
+        let sessionsQ = "sessions?year=\(year)"
 
-            // Re-evaluate policy from cached schedule if possible
-            if
-                let cachedMeetings: [Meeting] = endpointDecode(query: meetingsQ, maxAge: 7 * 24 * 60 * 60, cache: cache),
-                let cachedSessions: [Session] = endpointDecode(query: sessionsQ, maxAge: 7 * 24 * 60 * 60, cache: cache)
-            {
-                cache.meta.refreshInterval = isRaceWeekend(meetings: cachedMeetings, sessions: cachedSessions, now: now)
-                    ? OpenF1Config.refreshWeekendSeconds
-                    : OpenF1Config.refreshWeekSeconds
-                saveCache(cache)
-            }
+        // Re-evaluate policy from cached schedule if possible
+        if
+            let cachedMeetings: [Meeting] = endpointDecode(query: meetingsQ, maxAge: 7 * 24 * 60 * 60, cache: cache),
+            let cachedSessions: [Session] = endpointDecode(query: sessionsQ, maxAge: 7 * 24 * 60 * 60, cache: cache)
+        {
+            cache.meta.refreshInterval = isRaceWeekend(meetings: cachedMeetings, sessions: cachedSessions, now: now)
+                ? OpenF1Config.refreshWeekendSeconds
+                : OpenF1Config.refreshWeekSeconds
+            saveCache(cache)
+        }
 
-            let forced = force || consumeForceRefreshFlag()
-            let isDue = forced || ((now.timeIntervalSince1970 - cache.meta.lastRefreshTs) >= cache.meta.refreshInterval)
+        let forced = force || consumeForceRefreshFlag()
+        let isDue = forced || ((now.timeIntervalSince1970 - cache.meta.lastRefreshTs) >= cache.meta.refreshInterval)
 
-            var meetings: [Meeting] = []
-            var sessions: [Session] = []
-            var apiUsed = false
+        var meetings: [Meeting] = []
+        var sessions: [Session] = []
+        var apiUsed = false
 
-            if isDue {
-                do {
-                    let meetingsResp = try await fetchJSONCached(
-                        query: meetingsQ,
-                        type: [Meeting].self,
-                        maxAge: 24 * 60 * 60,
-                        forceApi: true,
-                        cache: &cache
-                    )
-                    let sessionsResp = try await fetchJSONCached(
-                        query: sessionsQ,
-                        type: [Session].self,
-                        maxAge: 24 * 60 * 60,
-                        forceApi: true,
-                        cache: &cache
-                    )
-                    meetings = meetingsResp.value
-                    sessions = sessionsResp.value
-                    apiUsed = meetingsResp.source == "API" || sessionsResp.source == "API"
-                } catch {
-                    // Degrade gracefully: fallback to cached schedule data if API fails.
-                    meetings = endpointDecode(query: meetingsQ, maxAge: 7 * 24 * 60 * 60, cache: cache) ?? []
-                    sessions = endpointDecode(query: sessionsQ, maxAge: 7 * 24 * 60 * 60, cache: cache) ?? []
-                }
-            } else {
+        if isDue {
+            do {
+                let meetingsResp = try await fetchJSONCached(
+                    query: meetingsQ,
+                    type: [Meeting].self,
+                    maxAge: 24 * 60 * 60,
+                    forceApi: true,
+                    cache: &cache
+                )
+                let sessionsResp = try await fetchJSONCached(
+                    query: sessionsQ,
+                    type: [Session].self,
+                    maxAge: 24 * 60 * 60,
+                    forceApi: true,
+                    cache: &cache
+                )
+                meetings = meetingsResp.value
+                sessions = sessionsResp.value
+                apiUsed = meetingsResp.source == "API" || sessionsResp.source == "API"
+            } catch {
+                // Degrade gracefully: fallback to cached schedule data if API fails.
                 meetings = endpointDecode(query: meetingsQ, maxAge: 7 * 24 * 60 * 60, cache: cache) ?? []
                 sessions = endpointDecode(query: sessionsQ, maxAge: 7 * 24 * 60 * 60, cache: cache) ?? []
             }
-
-            let cal = buildCalendarView(meetings: meetings, sessions: sessions, now: now, lastRefreshTs: cache.meta.lastRefreshTs, source: cache.meta.lastRefreshSource)
-
-            var standingsDrivers: [StandingDriver] = []
-            var standingsTeams: [StandingTeam] = []
-            do {
-                let standings = try await buildStandings(sessions: sessions, now: now, cache: &cache)
-                apiUsed = apiUsed || standings.source == "API"
-                standingsDrivers = standings.drivers
-                standingsTeams = standings.teams
-            } catch {
-                // Keep calendar visible even if standings endpoints fail.
-                standingsDrivers = []
-                standingsTeams = []
-            }
-
-            // Fallback: if current season has no completed race-like sessions yet, try previous season standings.
-            if standingsDrivers.isEmpty && standingsTeams.isEmpty {
-                let previousYear = max(2018, year - 1)
-                let prevSessionsQ = "sessions?year=\(previousYear)"
-                do {
-                    let prevSessionsResp = try await fetchJSONCached(
-                        query: prevSessionsQ,
-                        type: [Session].self,
-                        maxAge: 7 * 24 * 60 * 60,
-                        forceApi: false,
-                        cache: &cache
-                    )
-                    let prevStandings = try await buildStandings(sessions: prevSessionsResp.value, now: now, cache: &cache)
-                    if !prevStandings.drivers.isEmpty || !prevStandings.teams.isEmpty {
-                        standingsDrivers = prevStandings.drivers
-                        standingsTeams = prevStandings.teams
-                        apiUsed = apiUsed || prevStandings.source == "API" || prevSessionsResp.source == "API"
-                    }
-                } catch {
-                    // Keep empty standings text if fallback also fails.
-                }
-            }
-
-            let driverRows = formatDriverRows(standingsDrivers)
-            let teamRows = formatTeamRows(standingsTeams)
-
-            if !meetings.isEmpty, !sessions.isEmpty {
-                let interval = isRaceWeekend(meetings: meetings, sessions: sessions, now: now)
-                    ? OpenF1Config.refreshWeekendSeconds
-                    : OpenF1Config.refreshWeekSeconds
-                cache.meta.refreshInterval = interval
-                cache.meta.lastRefreshTs = now.timeIntervalSince1970
-                cache.meta.lastRefreshSource = apiUsed ? "API" : "CACHE"
-                saveCache(cache)
-            }
-
-            let model = WidgetViewModel(
-                panelTitle: cal.title,
-                subtitle: cal.subtitle,
-                calendarRows: cal.rows,
-                driverRows: driverRows,
-                teamRows: teamRows,
-                refreshSource: cache.meta.lastRefreshSource,
-                lastUpdated: cache.meta.lastRefreshTs > 0 ? Date(timeIntervalSince1970: cache.meta.lastRefreshTs) : nil
-            )
-
-            cache.lastGoodModel = model
-            saveCache(cache)
-
-            let interval = max(cache.meta.refreshInterval, 15 * 60)
-            return DashboardPayload(model: model, refreshInterval: interval)
-        } catch {
-            let cache = loadCache()
-            if let lastGood = cache.lastGoodModel {
-                return DashboardPayload(model: lastGood, refreshInterval: max(cache.meta.refreshInterval, 15 * 60))
-            }
-
-            let fallback = WidgetViewModel(
-                panelTitle: "F1 !",
-                subtitle: "Data unavailable",
-                calendarRows: [.init(text: "Calendar unavailable (network/API error).", dim: false)],
-                driverRows: ["Standings unavailable"],
-                teamRows: ["Standings unavailable"],
-                refreshSource: "CACHE",
-                lastUpdated: nil
-            )
-            return DashboardPayload(model: fallback, refreshInterval: OpenF1Config.refreshWeekendSeconds)
+        } else {
+            meetings = endpointDecode(query: meetingsQ, maxAge: 7 * 24 * 60 * 60, cache: cache) ?? []
+            sessions = endpointDecode(query: sessionsQ, maxAge: 7 * 24 * 60 * 60, cache: cache) ?? []
         }
+
+        let cal = buildCalendarView(meetings: meetings, sessions: sessions, now: now, lastRefreshTs: cache.meta.lastRefreshTs, source: cache.meta.lastRefreshSource)
+
+        var standingsDrivers: [StandingDriver] = []
+        var standingsTeams: [StandingTeam] = []
+        do {
+            let standings = try await buildStandings(sessions: sessions, now: now, cache: &cache)
+            apiUsed = apiUsed || standings.source == "API"
+            standingsDrivers = standings.drivers
+            standingsTeams = standings.teams
+        } catch {
+            // Keep calendar visible even if standings endpoints fail.
+            standingsDrivers = []
+            standingsTeams = []
+        }
+
+        // Fallback: if current season has no completed race-like sessions yet, try previous season standings.
+        if standingsDrivers.isEmpty && standingsTeams.isEmpty {
+            let previousYear = max(2018, year - 1)
+            let prevSessionsQ = "sessions?year=\(previousYear)"
+            do {
+                let prevSessionsResp = try await fetchJSONCached(
+                    query: prevSessionsQ,
+                    type: [Session].self,
+                    maxAge: 7 * 24 * 60 * 60,
+                    forceApi: false,
+                    cache: &cache
+                )
+                let prevStandings = try await buildStandings(sessions: prevSessionsResp.value, now: now, cache: &cache)
+                if !prevStandings.drivers.isEmpty || !prevStandings.teams.isEmpty {
+                    standingsDrivers = prevStandings.drivers
+                    standingsTeams = prevStandings.teams
+                    apiUsed = apiUsed || prevStandings.source == "API" || prevSessionsResp.source == "API"
+                }
+            } catch {
+                // Keep empty standings text if fallback also fails.
+            }
+        }
+
+        let driverRows = formatDriverRows(standingsDrivers)
+        let teamRows = formatTeamRows(standingsTeams)
+
+        if !meetings.isEmpty, !sessions.isEmpty {
+            let interval = isRaceWeekend(meetings: meetings, sessions: sessions, now: now)
+                ? OpenF1Config.refreshWeekendSeconds
+                : OpenF1Config.refreshWeekSeconds
+            cache.meta.refreshInterval = interval
+            cache.meta.lastRefreshTs = now.timeIntervalSince1970
+            cache.meta.lastRefreshSource = apiUsed ? "API" : "CACHE"
+            saveCache(cache)
+        }
+
+        let model = WidgetViewModel(
+            panelTitle: cal.title,
+            subtitle: cal.subtitle,
+            calendarRows: cal.rows,
+            driverRows: driverRows,
+            teamRows: teamRows,
+            refreshSource: cache.meta.lastRefreshSource,
+            lastUpdated: cache.meta.lastRefreshTs > 0 ? Date(timeIntervalSince1970: cache.meta.lastRefreshTs) : nil
+        )
+
+        cache.lastGoodModel = model
+        saveCache(cache)
+
+        let interval = max(cache.meta.refreshInterval, 15 * 60)
+        return DashboardPayload(model: model, refreshInterval: interval)
+
+        // Fallback: if we reached here without returning (e.g., unexpected early exit), use last good model or a static placeholder.
+        let fallbackCache = loadCache()
+        if let lastGood = fallbackCache.lastGoodModel {
+            return DashboardPayload(model: lastGood, refreshInterval: max(fallbackCache.meta.refreshInterval, 15 * 60))
+        }
+
+        let fallback = WidgetViewModel(
+            panelTitle: "F1 !",
+            subtitle: "Data unavailable",
+            calendarRows: [.init(text: "Calendar unavailable (network/API error).", dim: false)],
+            driverRows: ["Standings unavailable"],
+            teamRows: ["Standings unavailable"],
+            refreshSource: "CACHE",
+            lastUpdated: nil
+        )
+        return DashboardPayload(model: fallback, refreshInterval: OpenF1Config.refreshWeekendSeconds)
     }
 
     public func requestManualRefresh() {
@@ -302,13 +301,11 @@ public struct OpenF1Service {
         }
 
         let flag = countryFlag(code: meeting.country_code)
-        let code = meeting.country_code ?? "N/A"
+        _ = meeting.country_code ?? "N/A"
         let location = sanitize(meeting.location ?? "Unknown")
         let name = sanitize(meeting.meeting_name ?? "Race Weekend")
 
         var rows: [CalendarRow] = []
-        rows.append(.init(text: "\(flag) \(name) (\(code))", dim: false))
-        rows.append(.init(text: location, dim: true))
         rows.append(.init(text: "Last updated: \(formattedRefresh(ts: lastRefreshTs)) (\(source))", dim: true))
         rows.append(.init(text: "Sessions (Local / UTC / System):", dim: true))
 
@@ -733,7 +730,7 @@ public struct OpenF1Service {
 
     private func formatDriverRows(_ drivers: [StandingDriver]) -> [String] {
         if drivers.isEmpty { return ["No completed race results yet"] }
-        return drivers.prefix(22).map { d in
+        return drivers.prefix(10).map { d in
             let pts = Int(d.points.rounded())
             return "\(d.rank). \(sanitize(d.name, maxLen: 40)) \(pts)p"
         }

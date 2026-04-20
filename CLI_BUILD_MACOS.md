@@ -52,7 +52,19 @@ pluginkit -a "$HOME/Applications/OpenF1Dashboard.app"
 pluginkit -a "$HOME/Applications/OpenF1Dashboard.app/Contents/PlugIns/OpenF1DashboardWidget.appex"
 ```
 
-## 6) Refresh host services
+## 6) Ensure installed-app-only registration (important)
+
+```bash
+pluginkit -m -A -D -v -p com.apple.widgetkit-extension \
+  | grep -i 'com.afsilva.OpenF1DashboardApp.widget'
+```
+
+Expected path (and only active one):
+`/Users/<you>/Applications/OpenF1Dashboard.app/Contents/PlugIns/OpenF1DashboardWidget.appex`
+
+If you still see any `DerivedData/.../OpenF1Dashboard.app/...` path, repeat step 5 and then restart host services (step 7).
+
+## 7) Refresh host services
 
 ```bash
 killall NotificationCenter || true
@@ -60,7 +72,7 @@ killall Dock || true
 killall Finder || true
 ```
 
-## 7) Verify active registration
+## 8) Verify active registration
 
 ```bash
 pluginkit -m -A -D -v -p com.apple.widgetkit-extension \
@@ -70,7 +82,7 @@ pluginkit -m -A -D -v -p com.apple.widgetkit-extension \
 Expected: one active entry pointing to:
 `~/Applications/OpenF1Dashboard.app/Contents/PlugIns/OpenF1DashboardWidget.appex`
 
-## 8) Launch app
+## 9) Launch app
 
 ```bash
 open "$HOME/Applications/OpenF1Dashboard.app"

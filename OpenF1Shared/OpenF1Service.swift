@@ -307,10 +307,8 @@ public struct OpenF1Service {
         let name = sanitize(meeting.meeting_name ?? "Race Weekend")
 
         var rows: [CalendarRow] = []
-        rows.append(.init(text: "\(flag) \(name) (\(code))", dim: false))
-        rows.append(.init(text: location, dim: true))
         rows.append(.init(text: "Last updated: \(formattedRefresh(ts: lastRefreshTs)) (\(source))", dim: true))
-        rows.append(.init(text: "Sessions [R3] (Local / UTC / System):", dim: true))
+        rows.append(.init(text: "Sessions (Local / UTC / System):", dim: true))
 
         let tz = meeting.gmt_offset ?? "+00:00"
         for s in selectedSessions.prefix(8) {
@@ -733,7 +731,7 @@ public struct OpenF1Service {
 
     private func formatDriverRows(_ drivers: [StandingDriver]) -> [String] {
         if drivers.isEmpty { return ["No completed race results yet"] }
-        return drivers.prefix(22).map { d in
+        return drivers.prefix(10).map { d in
             let pts = Int(d.points.rounded())
             return "\(d.rank). \(sanitize(d.name, maxLen: 40)) \(pts)p"
         }
