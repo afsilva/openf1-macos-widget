@@ -131,7 +131,15 @@ public struct OpenF1Service {
                     ?? []
             }
 
-            let cal = buildCalendarView(meetings: meetings, sessions: sessions, now: now)
+            let calRaw = buildCalendarView(meetings: meetings, sessions: sessions, now: now)
+            let scheduleUnavailable = meetings.isEmpty || sessions.isEmpty || (calRaw.rows.count == 1 && calRaw.rows.first?.text == "No schedule data")
+            let cal: (title: String, subtitle: String, rows: [CalendarRow])
+            if scheduleUnavailable, let lastGood = cache.lastGoodModel, !lastGood.calendarRows.isEmpty {
+                // Keep last-known-good calendar context when schedule endpoints are temporarily unavailable.
+                cal = (lastGood.panelTitle, lastGood.subtitle, lastGood.calendarRows)
+            } else {
+                cal = calRaw
+            }
 
             var standingsDrivers: [StandingDriver] = []
             var standingsTeams: [StandingTeam] = []

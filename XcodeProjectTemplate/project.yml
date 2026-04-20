@@ -3,7 +3,6 @@ options:
   minimumXcodeGenVersion: 2.38.0
   createIntermediateGroups: true
   deploymentTarget:
-    macOS: "26.4"
     iOS: "17.0"
 configs:
   Debug: debug
@@ -16,73 +15,6 @@ settings:
     CODE_SIGN_STYLE: Automatic
 packages: {}
 targets:
-  OpenF1DashboardApp:
-    type: application
-    platform: macOS
-    deploymentTarget: "26.4"
-    info:
-      path: Config/OpenF1DashboardApp-Info.plist
-    entitlements:
-      path: Config/OpenF1DashboardApp.entitlements
-      properties:
-        com.apple.security.app-sandbox: true
-        com.apple.security.network.client: true
-        com.apple.security.application-groups:
-          - group.com.afsilva.openf1widget
-    sources:
-      - path: OpenF1DashboardApp
-      - path: OpenF1Shared
-    settings:
-      base:
-        PRODUCT_BUNDLE_IDENTIFIER: com.afsilva.OpenF1DashboardApp
-        PRODUCT_NAME: OpenF1Dashboard
-        GENERATE_INFOPLIST_FILE: NO
-        INFOPLIST_FILE: Config/OpenF1DashboardApp-Info.plist
-        ENABLE_APP_SANDBOX: YES
-        CODE_SIGN_STYLE: Automatic
-        CODE_SIGN_IDENTITY: Apple Development
-    dependencies:
-      - target: OpenF1DashboardWidget
-        embed: true
-        codeSign: true
-    scheme:
-      testTargets: []
-
-  OpenF1DashboardWidget:
-    type: app-extension
-    platform: macOS
-    deploymentTarget: "26.4"
-    info:
-      path: Config/OpenF1DashboardWidget-Info.plist
-      properties:
-        NSExtension:
-          NSExtensionAttributes:
-            WKAppBundleIdentifier: "$(OPENF1_HOST_APP_BUNDLE_IDENTIFIER)"
-          NSExtensionPointIdentifier: com.apple.widgetkit-extension
-          NSExtensionPrincipalClass: "$(PRODUCT_MODULE_NAME).OpenF1WidgetBundle"
-    entitlements:
-      path: Config/OpenF1DashboardWidget.entitlements
-      properties:
-        com.apple.security.app-sandbox: true
-        com.apple.security.network.client: true
-        com.apple.security.application-groups:
-          - group.com.afsilva.openf1widget
-    sources:
-      - path: OpenF1DashboardWidget
-      - path: OpenF1Shared
-    settings:
-      base:
-        PRODUCT_BUNDLE_IDENTIFIER: com.afsilva.OpenF1DashboardApp.widget
-        PRODUCT_NAME: OpenF1DashboardWidget
-        GENERATE_INFOPLIST_FILE: NO
-        INFOPLIST_FILE: Config/OpenF1DashboardWidget-Info.plist
-        OPENF1_HOST_APP_BUNDLE_IDENTIFIER: com.afsilva.OpenF1DashboardApp
-        APPLICATION_EXTENSION_API_ONLY: YES
-        ENABLE_APP_SANDBOX: YES
-        SKIP_INSTALL: YES
-        CODE_SIGN_STYLE: Automatic
-        CODE_SIGN_IDENTITY: Apple Development
-
   OpenF1DashboardiOSApp:
     type: application
     platform: iOS

@@ -1,22 +1,10 @@
-# OpenF1 Dashboard (Unified Apple: macOS + iOS Widgets)
+# OpenF1 Dashboard (iOS Widget First: iOS + iPadOS + macOS via iPhone widgets)
 
-A WidgetKit-based Apple-platform widget project that follows the same product and reliability principles as `openf1-gnome-extension`:
+This project is now intentionally simplified to a **single active widget path**:
 
-1. **Calendar**
-   - Upcoming **non-canceled** race weekend
-   - During active weekend, highlights the **next upcoming session/event**
-   - Compact display of race/session timing
-
-2. **Championship points**
-   - Driver standings (aggregated from OpenF1 race/sprint session results)
-   - Constructor standings (team point aggregation)
-
-3. **Reliability / API hygiene**
-   - Cache-first endpoint retrieval
-   - Refresh policy:
-     - **once/day** during non-race periods
-     - **once/hour** during race weekends (or close to next weekend)
-   - Manual refresh support via `Refresh Now` App Intent
+- **Active/maintained:** iOS WidgetKit app + widget extension
+- **Runs on:** iPhone, iPad, and macOS (via iPhone widgets on Mac)
+- **Obsolete/deprecated:** native macOS widget target path
 
 Data source: [OpenF1 API](https://api.openf1.org)
 
@@ -24,17 +12,28 @@ License: **GPL-3.0-or-later** (`LICENSE`)
 
 ---
 
-## Compatibility
+## Why this simplification
 
-- **macOS 26.4+** (WidgetKit target)
-- **iOS 17+** (WidgetKit target)
-- SwiftUI + WidgetKit + AppIntents
+You identified that the iOS widget path is more reliable in practice. To reduce complexity and maintenance burden, this repo now focuses on the widget path that works best across your devices.
 
-> The repo is organized for a unified Apple approach: shared logic + platform-specific app/widget targets.
+That means:
+- one primary app/widget target pair,
+- one shared service/model path,
+- fewer signing, cache, and extension-registration permutations.
 
 ---
 
-## Project layout
+## Compatibility
+
+- **iOS 17+**
+- **iPadOS 17+**
+- **macOS (Apple Silicon) via iPhone widgets on Mac**
+
+> Native macOS widget targets are kept in repo history/runtime folders for reference but are no longer generated as active targets from `project.yml`.
+
+---
+
+## Active project layout
 
 ```text
 openf1-macos-widget/
@@ -42,14 +41,7 @@ openf1-macos-widget/
     OpenF1Models.swift
     OpenF1Service.swift
 
-  # macOS runtime sources
-  OpenF1HostApp/
-    OpenF1HostApp.swift
-  OpenF1Widget/
-    OpenF1Widget.swift
-    RefreshNowIntent.swift
-
-  # iOS runtime sources
+  # Active runtime sources
   OpenF1iOSHostApp/
     OpenF1iOSHostApp.swift
   OpenF1iOSWidget/
@@ -57,24 +49,24 @@ openf1-macos-widget/
     RefreshNowIntent.swift
 
   XcodeProjectTemplate/
-    project.yml
+    project.yml                      # iOS-only active targets
     SETUP_CHECKLIST.md
     Scripts/generate_xcodeproj.sh
     Config/*.plist + *.entitlements
-    OpenF1DashboardApp/*          # macOS host app
-    OpenF1DashboardWidget/*       # macOS widget
-    OpenF1DashboardiOSApp/*       # iOS host app
-    OpenF1DashboardiOSWidget/*    # iOS widget
+    OpenF1DashboardiOSApp/*          # active
+    OpenF1DashboardiOSWidget/*       # active
     OpenF1Shared/*
-```
 
-If you want the fastest setup path, use `XcodeProjectTemplate/` directly.
+  # Obsolete native macOS runtime paths (deprecated)
+  OpenF1HostApp/
+  OpenF1Widget/
+  XcodeProjectTemplate/OpenF1DashboardApp/
+  XcodeProjectTemplate/OpenF1DashboardWidget/
+```
 
 ---
 
-## Setup in Xcode (unified)
-
-### Option A (recommended): Ready-to-import template
+## Setup (iOS-first)
 
 ```bash
 cd openf1-macos-widget/XcodeProjectTemplate
@@ -82,140 +74,62 @@ cd openf1-macos-widget/XcodeProjectTemplate
 open OpenF1Dashboard.xcodeproj
 ```
 
-Then follow:
-- `openf1-macos-widget/XcodeProjectTemplate/SETUP_CHECKLIST.md`
+Then configure only:
+- `OpenF1DashboardiOSApp`
+- `OpenF1DashboardiOSWidget`
 
-### Option B: Manual integration
+### Required capabilities
 
-1. Create Apple app targets + widget extension targets for macOS and iOS.
-2. Add an **App Group** capability to all app/widget targets (same group across all four).
-3. Copy files from this folder into your project:
-   - `OpenF1Shared/*` into a shared group included in all targets
-   - `OpenF1Widget/*` + `OpenF1HostApp/*` for macOS targets
-   - `OpenF1iOSWidget/*` + `OpenF1iOSHostApp/*` for iOS targets
-4. In `OpenF1Service.swift`, replace `AppGroupConfig.identifier` with your real App Group identifier.
-5. Build/run host apps, then add widgets from the corresponding widget galleries.
+Enable the same **App Group** on both iOS targets, e.g.:
+- `group.com.yourorg.openf1widget`
 
----
-
-## Shared architecture (industry-standard Apple pattern)
-
-- **Shared core module** (`OpenF1Shared`)
-  - Models, OpenF1 networking, cache envelope, standings aggregation, refresh policy
-- **Platform-specific UI targets**
-  - macOS app + widget
-  - iOS app + widget
-- **Single App Group-backed cache**
-  - Enables shared widget/app refresh flags and persistent endpoint cache per platform app suite
-
-This keeps behavior aligned while allowing per-platform UI tuning.
+Update in code:
+- `OpenF1Shared/OpenF1Service.swift`
+- `AppGroupConfig.identifier`
 
 ---
 
-## Security review (OWASP Top 10 aligned)
+## Behavior
 
-This project is a local Apple UI client with outbound HTTPS requests to OpenF1. It does not process credentials, auth tokens, payments, or arbitrary user-provided query input. The implementation applies OWASP-aligned controls:
+- Calendar of next relevant sessions (non-canceled)
+- Driver + constructor standings from OpenF1 session results
+- Cache-first refresh with fallback to last-known-good model
+- Manual refresh via widget intent button
 
-### A01 Broken Access Control
-- No privileged backend actions or role/authorization model in scope.
-- Widget only reads public API data and writes cache in app-group container.
-
-### A02 Cryptographic Failures
-- Uses HTTPS OpenF1 endpoint only (`https://api.openf1.org/v1`).
-- No secrets stored in source or cache.
-
-### A03 Injection
-- API path/query is allowlisted (`meetings`, `sessions`, `session_result`, `drivers`).
-- Query string is validated against URL-safe characters.
-- UI output is sanitized to strip control characters and normalize whitespace.
-
-### A04 Insecure Design
-- Cache-first design reduces API pressure and failure exposure.
-- Explicit refresh policy (daily off-weekend, hourly race weekend).
-- Defensive handling for network/API failures with generic fallback UI.
-
-### A05 Security Misconfiguration
-- HTTP requests use explicit timeout.
-- Error surface in widget is generic (no raw payload dump).
-- App Group scope is explicit and must be configured by developer.
-
-### A06 Vulnerable and Outdated Components
-- Keep macOS/iOS/Xcode/SDK dependencies updated.
-- No bundled third-party runtime packages in this source pack.
-
-### A07 Identification and Authentication Failures
-- Not applicable (no authentication workflow).
-
-### A08 Software and Data Integrity Failures
-- API payloads are decoded into typed models.
-- Response size is bounded (1MB cap).
-- On-disk cache size and endpoint entry count are bounded.
-
-### A09 Security Logging and Monitoring Failures
-- Failures degrade safely in-widget (generic status/fallback rows).
-- Operational diagnostics should be monitored via Xcode console / unified logs during development and release testing.
-
-### A10 Server-Side Request Forgery (SSRF)
-- Endpoint host is fixed constant (`api.openf1.org`).
-- Dynamic path/query is endpoint-allowlisted and validated.
-
-## Additional hardening implemented
-- Response size cap (1MB)
-- On-disk cache size cap (2MB)
-- Endpoint cache entry cap
-- Sanitized UI text rendering
-- Genericized error surface in widget
+Refresh policy:
+- daily off-weekend
+- hourly around race weekends
 
 ---
 
-## Design parity with GNOME extension
+## Security posture (OWASP-aligned)
 
-This project preserves the same core behavior:
+Key controls retained:
+- fixed HTTPS host (`api.openf1.org`)
+- endpoint allowlist
+- query validation
+- bounded response/cache sizes
+- sanitized rendered text
+- genericized error/fallback UI
+- no secret/token handling in code/cache
 
-- Skip fully canceled weekends
-- Show next meaningful event/session
-- Compute standings from OpenF1 `session_result`
-- Enrich driver/team from `drivers` endpoint
-- Persist and reuse cached schedule/results
-- Adaptive refresh interval (daily vs hourly)
-
----
-
-## Manual refresh
-
-Widgets support a `Refresh Now` App Intent (`RefreshNowIntent`) that:
-
-- sets a `force-refresh` flag in shared defaults
-- calls `WidgetCenter.shared.reloadAllTimelines()`
-
-The next timeline build consumes that flag and forces API refresh.
+See `SECURITY_OWASP_TOP10.md` for assessment details.
 
 ---
 
-## Validation and diagnostics
+## Obsolete native macOS widget path
 
-1. **Widget timeline refresh checks**
-   - Add widgets on macOS and iOS.
-   - Trigger `Refresh Now` intent and verify updates.
+The following are now considered **obsolete/deprecated**:
+- native macOS app/widget targets in generated project
+- native macOS widget as primary distribution path
 
-2. **Xcode runtime logs**
-   - Run host app + widget extension for each platform.
-   - Inspect console for network failures, decoding failures, and timeline reload behavior.
-
-3. **Unified logging**
-   - Use Console.app / device logs filtered by bundle identifiers.
-   - Verify no sensitive payloads are printed and failures remain generic.
-
-4. **Network behavior checks**
-   - Confirm only `https://api.openf1.org/v1/*` requests are made.
-   - Confirm fallback UI appears when offline/API unavailable.
+Reason: iOS widget path is the most reliable and already spans iOS/iPadOS/macOS usage pattern desired.
 
 ---
 
-## Wrap-up docs
+## Related docs
 
-- `LICENSE` — GPL-3.0-or-later
-- `PROMPT.md` — minimal meaningful prompt to reproduce this outcome
-- `SECURITY_OWASP_TOP10.md` — OWASP Top 10 security assessment
-- `TECHNOLOGIES.md` — technology inventory
-- `CLI_BUILD_MACOS.md` — macOS CLI build/install/registration steps
+- `PROMPT.md` — updated regeneration prompts
+- `SECURITY_OWASP_TOP10.md` — OWASP Top 10 assessment
+- `APP_STORE_DEPLOYMENT.md` — deployment guidance
+- `XcodeProjectTemplate/SETUP_CHECKLIST.md` — iOS-first setup checklist

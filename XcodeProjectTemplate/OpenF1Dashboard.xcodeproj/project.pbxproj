@@ -3,27 +3,18 @@
 	archiveVersion = 1;
 	classes = {
 	};
-	objectVersion = 54;
+	objectVersion = 77;
 	objects = {
 
 /* Begin PBXBuildFile section */
-		013C90258735777ED659F847 /* OpenF1Models.swift in Sources */ = {isa = PBXBuildFile; fileRef = AAA62A5BA34B095F45C837D7 /* OpenF1Models.swift */; };
-		178BA3D9621944BCF6E67026 /* OpenF1HostApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = F564DD8D3C87C85E4A4904BC /* OpenF1HostApp.swift */; };
 		1DBBC8DE2CCC9BECE23EA3D3 /* OpenF1Service.swift in Sources */ = {isa = PBXBuildFile; fileRef = ACBD11F32CAEA007A0886FFE /* OpenF1Service.swift */; };
-		237B846EF42D251E5FF9E9EF /* RefreshNowIntent.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7276D6CC5BF49936509F872F /* RefreshNowIntent.swift */; };
-		29197C8EE10BE6A7F8766C85 /* OpenF1DashboardWidget.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = F0CBA1C7E7B40CA130EFB005 /* OpenF1DashboardWidget.appex */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
-		3A3C80B177F4AB958F8EDF8E /* OpenF1Models.swift in Sources */ = {isa = PBXBuildFile; fileRef = AAA62A5BA34B095F45C837D7 /* OpenF1Models.swift */; };
-		553C74019BC230167824B2EC /* OpenF1Widget.swift in Sources */ = {isa = PBXBuildFile; fileRef = E562058F257222BAE2469C2D /* OpenF1Widget.swift */; };
 		5886EB6CCE4608D1348C558A /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 1F846E9EB5F482EB953314F0 /* Assets.xcassets */; };
 		594B9D7DB77892E4193E3E0E /* OpenF1Models.swift in Sources */ = {isa = PBXBuildFile; fileRef = AAA62A5BA34B095F45C837D7 /* OpenF1Models.swift */; };
 		6E7C42D9A7F27014A3AF6F86 /* OpenF1Service.swift in Sources */ = {isa = PBXBuildFile; fileRef = ACBD11F32CAEA007A0886FFE /* OpenF1Service.swift */; };
 		92F3E353535928FCF769B191 /* OpenF1Models.swift in Sources */ = {isa = PBXBuildFile; fileRef = AAA62A5BA34B095F45C837D7 /* OpenF1Models.swift */; };
 		967A47545B5508DE7A2CE9A9 /* OpenF1DashboardiOSWidget.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = 28E74C88C2CD265F633A691F /* OpenF1DashboardiOSWidget.appex */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
-		AFF32F4634BCE5C22EA3E233 /* OpenF1Service.swift in Sources */ = {isa = PBXBuildFile; fileRef = ACBD11F32CAEA007A0886FFE /* OpenF1Service.swift */; };
 		BCA5EF0C532ABE6CF9159F58 /* OpenF1iOSHostApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2C562CC9C290C06D3F50894E /* OpenF1iOSHostApp.swift */; };
-		C38C875A8E4CA8F2B5E72058 /* OpenF1Service.swift in Sources */ = {isa = PBXBuildFile; fileRef = ACBD11F32CAEA007A0886FFE /* OpenF1Service.swift */; };
 		D6298963746695C82BCB3D8E /* OpenF1iOSWidget.swift in Sources */ = {isa = PBXBuildFile; fileRef = 203F5D67F64CE5A41F36C2A3 /* OpenF1iOSWidget.swift */; };
-		D7C035C250E4E59EFC4C7988 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 19A672C2676DAA2F32102CAE /* Assets.xcassets */; };
 		D80788E12D060D3DB343F974 /* RefreshNowIntent.swift in Sources */ = {isa = PBXBuildFile; fileRef = 911F74C754B3307680F4CF75 /* RefreshNowIntent.swift */; };
 /* End PBXBuildFile section */
 
@@ -35,27 +26,9 @@
 			remoteGlobalIDString = 21E2D06A987FA2093FFD48A9;
 			remoteInfo = OpenF1DashboardiOSWidget;
 		};
-		D274E5C9C9DDED0881057B14 /* PBXContainerItemProxy */ = {
-			isa = PBXContainerItemProxy;
-			containerPortal = 01F2E6A6708BA8CE23EB4157 /* Project object */;
-			proxyType = 1;
-			remoteGlobalIDString = B02BC36F06619D59179401E4;
-			remoteInfo = OpenF1DashboardWidget;
-		};
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXCopyFilesBuildPhase section */
-		0648AFC610A0890EA1C56471 /* Embed Foundation Extensions */ = {
-			isa = PBXCopyFilesBuildPhase;
-			buildActionMask = 2147483647;
-			dstPath = "";
-			dstSubfolderSpec = 13;
-			files = (
-				29197C8EE10BE6A7F8766C85 /* OpenF1DashboardWidget.appex in Embed Foundation Extensions */,
-			);
-			name = "Embed Foundation Extensions";
-			runOnlyForDeploymentPostprocessing = 0;
-		};
 		1CC3DE71A83B2B4C2D82FEF3 /* Embed Foundation Extensions */ = {
 			isa = PBXCopyFilesBuildPhase;
 			buildActionMask = 2147483647;
@@ -70,41 +43,17 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
-		12C0611E4F3231795301426B /* OpenF1DashboardApp.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = OpenF1DashboardApp.app; sourceTree = BUILT_PRODUCTS_DIR; };
-		19A672C2676DAA2F32102CAE /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		1F846E9EB5F482EB953314F0 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		203F5D67F64CE5A41F36C2A3 /* OpenF1iOSWidget.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OpenF1iOSWidget.swift; sourceTree = "<group>"; };
 		28E74C88C2CD265F633A691F /* OpenF1DashboardiOSWidget.appex */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = "wrapper.app-extension"; path = OpenF1DashboardiOSWidget.appex; sourceTree = BUILT_PRODUCTS_DIR; };
 		2C562CC9C290C06D3F50894E /* OpenF1iOSHostApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OpenF1iOSHostApp.swift; sourceTree = "<group>"; };
 		677DD4FC7516C220114AF6D6 /* OpenF1DashboardiOSApp.app */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.application; path = OpenF1DashboardiOSApp.app; sourceTree = BUILT_PRODUCTS_DIR; };
-		7276D6CC5BF49936509F872F /* RefreshNowIntent.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RefreshNowIntent.swift; sourceTree = "<group>"; };
 		911F74C754B3307680F4CF75 /* RefreshNowIntent.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RefreshNowIntent.swift; sourceTree = "<group>"; };
 		AAA62A5BA34B095F45C837D7 /* OpenF1Models.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OpenF1Models.swift; sourceTree = "<group>"; };
 		ACBD11F32CAEA007A0886FFE /* OpenF1Service.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OpenF1Service.swift; sourceTree = "<group>"; };
-		E562058F257222BAE2469C2D /* OpenF1Widget.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OpenF1Widget.swift; sourceTree = "<group>"; };
-		F0CBA1C7E7B40CA130EFB005 /* OpenF1DashboardWidget.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = OpenF1DashboardWidget.appex; sourceTree = BUILT_PRODUCTS_DIR; };
-		F564DD8D3C87C85E4A4904BC /* OpenF1HostApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OpenF1HostApp.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXGroup section */
-		1DF47E519AD198F533AA8AF6 /* OpenF1DashboardWidget */ = {
-			isa = PBXGroup;
-			children = (
-				E562058F257222BAE2469C2D /* OpenF1Widget.swift */,
-				7276D6CC5BF49936509F872F /* RefreshNowIntent.swift */,
-			);
-			path = OpenF1DashboardWidget;
-			sourceTree = "<group>";
-		};
-		248302C4E39157E9FA47F108 /* OpenF1DashboardApp */ = {
-			isa = PBXGroup;
-			children = (
-				19A672C2676DAA2F32102CAE /* Assets.xcassets */,
-				F564DD8D3C87C85E4A4904BC /* OpenF1HostApp.swift */,
-			);
-			path = OpenF1DashboardApp;
-			sourceTree = "<group>";
-		};
 		6D9961BFADDBB4D5B36EA624 /* OpenF1DashboardiOSApp */ = {
 			isa = PBXGroup;
 			children = (
@@ -135,10 +84,8 @@
 		CBC425F929596F8B1F86CAB3 /* Products */ = {
 			isa = PBXGroup;
 			children = (
-				12C0611E4F3231795301426B /* OpenF1DashboardApp.app */,
 				677DD4FC7516C220114AF6D6 /* OpenF1DashboardiOSApp.app */,
 				28E74C88C2CD265F633A691F /* OpenF1DashboardiOSWidget.appex */,
-				F0CBA1C7E7B40CA130EFB005 /* OpenF1DashboardWidget.appex */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -146,10 +93,8 @@
 		EC144CEF82FD7ADA1FD18C04 = {
 			isa = PBXGroup;
 			children = (
-				248302C4E39157E9FA47F108 /* OpenF1DashboardApp */,
 				6D9961BFADDBB4D5B36EA624 /* OpenF1DashboardiOSApp */,
 				C7C8141F3A4EC2FCEEE78051 /* OpenF1DashboardiOSWidget */,
-				1DF47E519AD198F533AA8AF6 /* OpenF1DashboardWidget */,
 				727278F63C99CBBAB3A384A0 /* OpenF1Shared */,
 				CBC425F929596F8B1F86CAB3 /* Products */,
 			);
@@ -169,27 +114,11 @@
 			dependencies = (
 			);
 			name = OpenF1DashboardiOSWidget;
+			packageProductDependencies = (
+			);
 			productName = OpenF1DashboardiOSWidget;
 			productReference = 28E74C88C2CD265F633A691F /* OpenF1DashboardiOSWidget.appex */;
 			productType = "com.apple.product-type.app-extension";
-		};
-		94DC029AF68F137B19BDAC42 /* OpenF1DashboardApp */ = {
-			isa = PBXNativeTarget;
-			buildConfigurationList = A165EB3D6038E40F8C4E2533 /* Build configuration list for PBXNativeTarget "OpenF1DashboardApp" */;
-			buildPhases = (
-				0B998349D55CF0CF8B185864 /* Sources */,
-				7C1640834F617E9F966C4998 /* Resources */,
-				0648AFC610A0890EA1C56471 /* Embed Foundation Extensions */,
-			);
-			buildRules = (
-			);
-			dependencies = (
-				1CAED183C8AD43567B8E08C8 /* PBXTargetDependency */,
-			);
-			name = OpenF1DashboardApp;
-			productName = OpenF1DashboardApp;
-			productReference = 12C0611E4F3231795301426B /* OpenF1DashboardApp.app */;
-			productType = "com.apple.product-type.application";
 		};
 		9E502B7F8AF4172B7DE19845 /* OpenF1DashboardiOSApp */ = {
 			isa = PBXNativeTarget;
@@ -205,24 +134,11 @@
 				A4FC45E8DCAFA924F362702D /* PBXTargetDependency */,
 			);
 			name = OpenF1DashboardiOSApp;
+			packageProductDependencies = (
+			);
 			productName = OpenF1DashboardiOSApp;
 			productReference = 677DD4FC7516C220114AF6D6 /* OpenF1DashboardiOSApp.app */;
 			productType = "com.apple.product-type.application";
-		};
-		B02BC36F06619D59179401E4 /* OpenF1DashboardWidget */ = {
-			isa = PBXNativeTarget;
-			buildConfigurationList = 7A03DC2551E00C5AD29EBF05 /* Build configuration list for PBXNativeTarget "OpenF1DashboardWidget" */;
-			buildPhases = (
-				33610FEC7DA79ADBB5FB3A75 /* Sources */,
-			);
-			buildRules = (
-			);
-			dependencies = (
-			);
-			name = OpenF1DashboardWidget;
-			productName = OpenF1DashboardWidget;
-			productReference = F0CBA1C7E7B40CA130EFB005 /* OpenF1DashboardWidget.appex */;
-			productType = "com.apple.product-type.app-extension";
 		};
 /* End PBXNativeTarget section */
 
@@ -236,19 +152,12 @@
 					21E2D06A987FA2093FFD48A9 = {
 						ProvisioningStyle = Automatic;
 					};
-					94DC029AF68F137B19BDAC42 = {
-						ProvisioningStyle = Automatic;
-					};
 					9E502B7F8AF4172B7DE19845 = {
-						ProvisioningStyle = Automatic;
-					};
-					B02BC36F06619D59179401E4 = {
 						ProvisioningStyle = Automatic;
 					};
 				};
 			};
 			buildConfigurationList = ECB67FEC2755A74D60B5B3B0 /* Build configuration list for PBXProject "OpenF1Dashboard" */;
-			compatibilityVersion = "Xcode 14.0";
 			developmentRegion = en;
 			hasScannedForEncodings = 0;
 			knownRegions = (
@@ -256,11 +165,12 @@
 				en,
 			);
 			mainGroup = EC144CEF82FD7ADA1FD18C04;
+			minimizedProjectReferenceProxies = 1;
+			preferredProjectObjectVersion = 77;
+			productRefGroup = CBC425F929596F8B1F86CAB3 /* Products */;
 			projectDirPath = "";
 			projectRoot = "";
 			targets = (
-				94DC029AF68F137B19BDAC42 /* OpenF1DashboardApp */,
-				B02BC36F06619D59179401E4 /* OpenF1DashboardWidget */,
 				9E502B7F8AF4172B7DE19845 /* OpenF1DashboardiOSApp */,
 				21E2D06A987FA2093FFD48A9 /* OpenF1DashboardiOSWidget */,
 			);
@@ -276,38 +186,9 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
-		7C1640834F617E9F966C4998 /* Resources */ = {
-			isa = PBXResourcesBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-				D7C035C250E4E59EFC4C7988 /* Assets.xcassets in Resources */,
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
 /* End PBXResourcesBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
-		0B998349D55CF0CF8B185864 /* Sources */ = {
-			isa = PBXSourcesBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-				178BA3D9621944BCF6E67026 /* OpenF1HostApp.swift in Sources */,
-				3A3C80B177F4AB958F8EDF8E /* OpenF1Models.swift in Sources */,
-				AFF32F4634BCE5C22EA3E233 /* OpenF1Service.swift in Sources */,
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
-		33610FEC7DA79ADBB5FB3A75 /* Sources */ = {
-			isa = PBXSourcesBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-				013C90258735777ED659F847 /* OpenF1Models.swift in Sources */,
-				C38C875A8E4CA8F2B5E72058 /* OpenF1Service.swift in Sources */,
-				553C74019BC230167824B2EC /* OpenF1Widget.swift in Sources */,
-				237B846EF42D251E5FF9E9EF /* RefreshNowIntent.swift in Sources */,
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
 		AA8614731EE797CCBA2DA387 /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
@@ -332,11 +213,6 @@
 /* End PBXSourcesBuildPhase section */
 
 /* Begin PBXTargetDependency section */
-		1CAED183C8AD43567B8E08C8 /* PBXTargetDependency */ = {
-			isa = PBXTargetDependency;
-			target = B02BC36F06619D59179401E4 /* OpenF1DashboardWidget */;
-			targetProxy = D274E5C9C9DDED0881057B14 /* PBXContainerItemProxy */;
-		};
 		A4FC45E8DCAFA924F362702D /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
 			target = 21E2D06A987FA2093FFD48A9 /* OpenF1DashboardiOSWidget */;
@@ -444,39 +320,17 @@
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
 				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
-				MACOSX_DEPLOYMENT_TARGET = 26.4;
 				MARKETING_VERSION = 1.0;
 				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
 				MTL_FAST_MATH = YES;
 				ONLY_ACTIVE_ARCH = YES;
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = iphoneos;
 				SWIFT_ACTIVE_COMPILATION_CONDITIONS = DEBUG;
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
 				SWIFT_VERSION = 5.0;
 			};
 			name = Debug;
-		};
-		7810DBD8061407910D14FF8D /* Release */ = {
-			isa = XCBuildConfiguration;
-			buildSettings = {
-				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
-				CODE_SIGN_ENTITLEMENTS = Config/OpenF1DashboardApp.entitlements;
-				CODE_SIGN_IDENTITY = "Apple Development";
-				CODE_SIGN_STYLE = Automatic;
-				COMBINE_HIDPI_IMAGES = YES;
-				ENABLE_APP_SANDBOX = YES;
-				GENERATE_INFOPLIST_FILE = NO;
-				INFOPLIST_FILE = "Config/OpenF1DashboardApp-Info.plist";
-				LD_RUNPATH_SEARCH_PATHS = (
-					"$(inherited)",
-					"@executable_path/../Frameworks",
-				);
-				MACOSX_DEPLOYMENT_TARGET = 26.4;
-				PRODUCT_BUNDLE_IDENTIFIER = com.afsilva.OpenF1DashboardApp;
-				PRODUCT_NAME = OpenF1Dashboard;
-				SDKROOT = macosx;
-			};
-			name = Release;
 		};
 		78509BD8E50C4E21EA3F757C /* Release */ = {
 			isa = XCBuildConfiguration;
@@ -526,64 +380,14 @@
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
 				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
-				MACOSX_DEPLOYMENT_TARGET = 26.4;
 				MARKETING_VERSION = 1.0;
 				MTL_ENABLE_DEBUG_INFO = NO;
 				MTL_FAST_MATH = YES;
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = iphoneos;
 				SWIFT_COMPILATION_MODE = wholemodule;
 				SWIFT_OPTIMIZATION_LEVEL = "-O";
 				SWIFT_VERSION = 5.0;
-			};
-			name = Release;
-		};
-		8073BBF3D3895AB7A51D7585 /* Debug */ = {
-			isa = XCBuildConfiguration;
-			buildSettings = {
-				APPLICATION_EXTENSION_API_ONLY = YES;
-				CODE_SIGN_ENTITLEMENTS = Config/OpenF1DashboardWidget.entitlements;
-				CODE_SIGN_IDENTITY = "Apple Development";
-				CODE_SIGN_STYLE = Automatic;
-				COMBINE_HIDPI_IMAGES = YES;
-				ENABLE_APP_SANDBOX = YES;
-				GENERATE_INFOPLIST_FILE = NO;
-				INFOPLIST_FILE = "Config/OpenF1DashboardWidget-Info.plist";
-				LD_RUNPATH_SEARCH_PATHS = (
-					"$(inherited)",
-					"@executable_path/../Frameworks",
-					"@executable_path/../../../../Frameworks",
-				);
-				MACOSX_DEPLOYMENT_TARGET = 26.4;
-				OPENF1_HOST_APP_BUNDLE_IDENTIFIER = com.afsilva.OpenF1DashboardApp;
-				PRODUCT_BUNDLE_IDENTIFIER = com.afsilva.OpenF1DashboardApp.widget;
-				PRODUCT_NAME = OpenF1DashboardWidget;
-				SDKROOT = macosx;
-				SKIP_INSTALL = YES;
-			};
-			name = Debug;
-		};
-		9ADFDB27012A669E7E34097F /* Release */ = {
-			isa = XCBuildConfiguration;
-			buildSettings = {
-				APPLICATION_EXTENSION_API_ONLY = YES;
-				CODE_SIGN_ENTITLEMENTS = Config/OpenF1DashboardWidget.entitlements;
-				CODE_SIGN_IDENTITY = "Apple Development";
-				CODE_SIGN_STYLE = Automatic;
-				COMBINE_HIDPI_IMAGES = YES;
-				ENABLE_APP_SANDBOX = YES;
-				GENERATE_INFOPLIST_FILE = NO;
-				INFOPLIST_FILE = "Config/OpenF1DashboardWidget-Info.plist";
-				LD_RUNPATH_SEARCH_PATHS = (
-					"$(inherited)",
-					"@executable_path/../Frameworks",
-					"@executable_path/../../../../Frameworks",
-				);
-				MACOSX_DEPLOYMENT_TARGET = 26.4;
-				OPENF1_HOST_APP_BUNDLE_IDENTIFIER = com.afsilva.OpenF1DashboardApp;
-				PRODUCT_BUNDLE_IDENTIFIER = com.afsilva.OpenF1DashboardApp.widget;
-				PRODUCT_NAME = OpenF1DashboardWidget;
-				SDKROOT = macosx;
-				SKIP_INSTALL = YES;
 			};
 			name = Release;
 		};
@@ -611,28 +415,6 @@
 			};
 			name = Release;
 		};
-		C303A2000C74929981BB0564 /* Debug */ = {
-			isa = XCBuildConfiguration;
-			buildSettings = {
-				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
-				CODE_SIGN_ENTITLEMENTS = Config/OpenF1DashboardApp.entitlements;
-				CODE_SIGN_IDENTITY = "Apple Development";
-				CODE_SIGN_STYLE = Automatic;
-				COMBINE_HIDPI_IMAGES = YES;
-				ENABLE_APP_SANDBOX = YES;
-				GENERATE_INFOPLIST_FILE = NO;
-				INFOPLIST_FILE = "Config/OpenF1DashboardApp-Info.plist";
-				LD_RUNPATH_SEARCH_PATHS = (
-					"$(inherited)",
-					"@executable_path/../Frameworks",
-				);
-				MACOSX_DEPLOYMENT_TARGET = 26.4;
-				PRODUCT_BUNDLE_IDENTIFIER = com.afsilva.OpenF1DashboardApp;
-				PRODUCT_NAME = OpenF1Dashboard;
-				SDKROOT = macosx;
-			};
-			name = Debug;
-		};
 		DA71F3F0E458FA2B166DFE65 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
@@ -657,24 +439,6 @@
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
-		7A03DC2551E00C5AD29EBF05 /* Build configuration list for PBXNativeTarget "OpenF1DashboardWidget" */ = {
-			isa = XCConfigurationList;
-			buildConfigurations = (
-				8073BBF3D3895AB7A51D7585 /* Debug */,
-				9ADFDB27012A669E7E34097F /* Release */,
-			);
-			defaultConfigurationIsVisible = 0;
-			defaultConfigurationName = Debug;
-		};
-		A165EB3D6038E40F8C4E2533 /* Build configuration list for PBXNativeTarget "OpenF1DashboardApp" */ = {
-			isa = XCConfigurationList;
-			buildConfigurations = (
-				C303A2000C74929981BB0564 /* Debug */,
-				7810DBD8061407910D14FF8D /* Release */,
-			);
-			defaultConfigurationIsVisible = 0;
-			defaultConfigurationName = Debug;
-		};
 		CAB47247DEEE94D19786E5D5 /* Build configuration list for PBXNativeTarget "OpenF1DashboardiOSApp" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
