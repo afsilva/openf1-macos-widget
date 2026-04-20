@@ -1,0 +1,43 @@
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+
+# Xcode user/state
+*.xcuserstate
+xcuserdata/
+*.xcscmblueprint
+*.xccheckout
+
+# Xcode workspace transient
+*.xcworkspace/xcuserdata/
+*.xcworkspace/xcshareddata/swiftpm/
+
+# Build artifacts
+build/
+DerivedData/
+
+# Swift Package Manager
+.build/
+Package.resolved
+
+# App archives and logs
+*.ipa
+*.dSYM
+*.dSYM.zip
+*.xcarchive
+
+# Fastlane (if introduced)
+fastlane/report.xml
+fastlane/Preview.html
+fastlane/screenshots/**/*.png
+fastlane/test_output
+
+# Temporary files
+*.swp
+*.tmp
+*.orig
+
+# Local helper folders used during iterative debugging
+XcodeProjectTemplate/.dd-clean/
+XcodeProjectTemplate/.dd-icon-refresh/

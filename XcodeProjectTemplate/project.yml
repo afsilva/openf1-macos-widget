@@ -1,0 +1,67 @@
+name: OpenF1Dashboard
+options:
+  minimumXcodeGenVersion: 2.38.0
+  createIntermediateGroups: true
+  deploymentTarget:
+    macOS: "26.4"
+configs:
+  Debug: debug
+  Release: release
+settings:
+  base:
+    SWIFT_VERSION: "5.0"
+    MARKETING_VERSION: 1.0
+    CURRENT_PROJECT_VERSION: 1
+    CODE_SIGN_STYLE: Automatic
+packages: {}
+targets:
+  OpenF1DashboardApp:
+    type: application
+    platform: macOS
+    deploymentTarget: "26.4"
+    info:
+      path: Config/OpenF1DashboardApp-Info.plist
+    entitlements:
+      path: Config/OpenF1DashboardApp.entitlements
+    sources:
+      - path: OpenF1DashboardApp
+      - path: OpenF1Shared
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.example.OpenF1DashboardApp
+        PRODUCT_NAME: OpenF1Dashboard
+        GENERATE_INFOPLIST_FILE: NO
+        INFOPLIST_FILE: Config/OpenF1DashboardApp-Info.plist
+        ENABLE_APP_SANDBOX: YES
+        CODE_SIGN_STYLE: Automatic
+        CODE_SIGN_IDENTITY: Apple Development
+    dependencies:
+      - target: OpenF1DashboardWidget
+        embed: true
+        codeSign: true
+    scheme:
+      testTargets: []
+
+  OpenF1DashboardWidget:
+    type: app-extension
+    platform: macOS
+    deploymentTarget: "26.4"
+    info:
+      path: Config/OpenF1DashboardWidget-Info.plist
+    entitlements:
+      path: Config/OpenF1DashboardWidget.entitlements
+    sources:
+      - path: OpenF1DashboardWidget
+      - path: OpenF1Shared
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.example.OpenF1DashboardApp.widget
+        PRODUCT_NAME: OpenF1DashboardWidget
+        GENERATE_INFOPLIST_FILE: NO
+        INFOPLIST_FILE: Config/OpenF1DashboardWidget-Info.plist
+        OPENF1_HOST_APP_BUNDLE_IDENTIFIER: com.example.OpenF1DashboardApp
+        APPLICATION_EXTENSION_API_ONLY: YES
+        ENABLE_APP_SANDBOX: YES
+        SKIP_INSTALL: YES
+        CODE_SIGN_STYLE: Automatic
+        CODE_SIGN_IDENTITY: Apple Development
