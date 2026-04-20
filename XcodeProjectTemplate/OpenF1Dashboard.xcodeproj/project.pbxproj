@@ -359,7 +359,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				PRODUCT_BUNDLE_IDENTIFIER = com.example.OpenF1DashboardiOSApp;
+				PRODUCT_BUNDLE_IDENTIFIER = com.afsilva.OpenF1DashboardiOSApp;
 				PRODUCT_NAME = OpenF1DashboardiOS;
 				SDKROOT = iphoneos;
 				TARGETED_DEVICE_FAMILY = "1,2";
@@ -381,8 +381,8 @@
 					"@executable_path/Frameworks",
 					"@executable_path/../../Frameworks",
 				);
-				OPENF1_HOST_APP_BUNDLE_IDENTIFIER = com.example.OpenF1DashboardiOSApp;
-				PRODUCT_BUNDLE_IDENTIFIER = com.example.OpenF1DashboardiOSApp.widget;
+				OPENF1_HOST_APP_BUNDLE_IDENTIFIER = com.afsilva.OpenF1DashboardiOSApp;
+				PRODUCT_BUNDLE_IDENTIFIER = com.afsilva.OpenF1DashboardiOSApp.widget;
 				PRODUCT_NAME = OpenF1DashboardiOSWidget;
 				SDKROOT = iphoneos;
 				SKIP_INSTALL = YES;
@@ -472,7 +472,7 @@
 					"@executable_path/../Frameworks",
 				);
 				MACOSX_DEPLOYMENT_TARGET = 26.4;
-				PRODUCT_BUNDLE_IDENTIFIER = com.example.OpenF1DashboardApp;
+				PRODUCT_BUNDLE_IDENTIFIER = com.afsilva.OpenF1DashboardApp;
 				PRODUCT_NAME = OpenF1Dashboard;
 				SDKROOT = macosx;
 			};
@@ -554,8 +554,8 @@
 					"@executable_path/../../../../Frameworks",
 				);
 				MACOSX_DEPLOYMENT_TARGET = 26.4;
-				OPENF1_HOST_APP_BUNDLE_IDENTIFIER = com.example.OpenF1DashboardApp;
-				PRODUCT_BUNDLE_IDENTIFIER = com.example.OpenF1DashboardApp.widget;
+				OPENF1_HOST_APP_BUNDLE_IDENTIFIER = com.afsilva.OpenF1DashboardApp;
+				PRODUCT_BUNDLE_IDENTIFIER = com.afsilva.OpenF1DashboardApp.widget;
 				PRODUCT_NAME = OpenF1DashboardWidget;
 				SDKROOT = macosx;
 				SKIP_INSTALL = YES;
@@ -579,8 +579,8 @@
 					"@executable_path/../../../../Frameworks",
 				);
 				MACOSX_DEPLOYMENT_TARGET = 26.4;
-				OPENF1_HOST_APP_BUNDLE_IDENTIFIER = com.example.OpenF1DashboardApp;
-				PRODUCT_BUNDLE_IDENTIFIER = com.example.OpenF1DashboardApp.widget;
+				OPENF1_HOST_APP_BUNDLE_IDENTIFIER = com.afsilva.OpenF1DashboardApp;
+				PRODUCT_BUNDLE_IDENTIFIER = com.afsilva.OpenF1DashboardApp.widget;
 				PRODUCT_NAME = OpenF1DashboardWidget;
 				SDKROOT = macosx;
 				SKIP_INSTALL = YES;
@@ -602,8 +602,8 @@
 					"@executable_path/Frameworks",
 					"@executable_path/../../Frameworks",
 				);
-				OPENF1_HOST_APP_BUNDLE_IDENTIFIER = com.example.OpenF1DashboardiOSApp;
-				PRODUCT_BUNDLE_IDENTIFIER = com.example.OpenF1DashboardiOSApp.widget;
+				OPENF1_HOST_APP_BUNDLE_IDENTIFIER = com.afsilva.OpenF1DashboardiOSApp;
+				PRODUCT_BUNDLE_IDENTIFIER = com.afsilva.OpenF1DashboardiOSApp.widget;
 				PRODUCT_NAME = OpenF1DashboardiOSWidget;
 				SDKROOT = iphoneos;
 				SKIP_INSTALL = YES;
@@ -627,7 +627,7 @@
 					"@executable_path/../Frameworks",
 				);
 				MACOSX_DEPLOYMENT_TARGET = 26.4;
-				PRODUCT_BUNDLE_IDENTIFIER = com.example.OpenF1DashboardApp;
+				PRODUCT_BUNDLE_IDENTIFIER = com.afsilva.OpenF1DashboardApp;
 				PRODUCT_NAME = OpenF1Dashboard;
 				SDKROOT = macosx;
 			};
@@ -647,7 +647,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				PRODUCT_BUNDLE_IDENTIFIER = com.example.OpenF1DashboardiOSApp;
+				PRODUCT_BUNDLE_IDENTIFIER = com.afsilva.OpenF1DashboardiOSApp;
 				PRODUCT_NAME = OpenF1DashboardiOS;
 				SDKROOT = iphoneos;
 				TARGETED_DEVICE_FAMILY = "1,2";

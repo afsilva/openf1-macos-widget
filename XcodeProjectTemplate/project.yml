@@ -34,7 +34,7 @@ targets:
       - path: OpenF1Shared
     settings:
       base:
-        PRODUCT_BUNDLE_IDENTIFIER: com.example.OpenF1DashboardApp
+        PRODUCT_BUNDLE_IDENTIFIER: com.afsilva.OpenF1DashboardApp
         PRODUCT_NAME: OpenF1Dashboard
         GENERATE_INFOPLIST_FILE: NO
         INFOPLIST_FILE: Config/OpenF1DashboardApp-Info.plist
@@ -72,11 +72,11 @@ targets:
       - path: OpenF1Shared
     settings:
       base:
-        PRODUCT_BUNDLE_IDENTIFIER: com.example.OpenF1DashboardApp.widget
+        PRODUCT_BUNDLE_IDENTIFIER: com.afsilva.OpenF1DashboardApp.widget
         PRODUCT_NAME: OpenF1DashboardWidget
         GENERATE_INFOPLIST_FILE: NO
         INFOPLIST_FILE: Config/OpenF1DashboardWidget-Info.plist
-        OPENF1_HOST_APP_BUNDLE_IDENTIFIER: com.example.OpenF1DashboardApp
+        OPENF1_HOST_APP_BUNDLE_IDENTIFIER: com.afsilva.OpenF1DashboardApp
         APPLICATION_EXTENSION_API_ONLY: YES
         ENABLE_APP_SANDBOX: YES
         SKIP_INSTALL: YES
@@ -99,7 +99,7 @@ targets:
       - path: OpenF1Shared
     settings:
       base:
-        PRODUCT_BUNDLE_IDENTIFIER: com.example.OpenF1DashboardiOSApp
+        PRODUCT_BUNDLE_IDENTIFIER: com.afsilva.OpenF1DashboardiOSApp
         PRODUCT_NAME: OpenF1DashboardiOS
         GENERATE_INFOPLIST_FILE: NO
         INFOPLIST_FILE: Config/OpenF1DashboardiOSApp-Info.plist
@@ -134,11 +134,11 @@ targets:
       - path: OpenF1Shared
     settings:
       base:
-        PRODUCT_BUNDLE_IDENTIFIER: com.example.OpenF1DashboardiOSApp.widget
+        PRODUCT_BUNDLE_IDENTIFIER: com.afsilva.OpenF1DashboardiOSApp.widget
         PRODUCT_NAME: OpenF1DashboardiOSWidget
         GENERATE_INFOPLIST_FILE: NO
         INFOPLIST_FILE: Config/OpenF1DashboardiOSWidget-Info.plist
-        OPENF1_HOST_APP_BUNDLE_IDENTIFIER: com.example.OpenF1DashboardiOSApp
+        OPENF1_HOST_APP_BUNDLE_IDENTIFIER: com.afsilva.OpenF1DashboardiOSApp
         APPLICATION_EXTENSION_API_ONLY: YES
         TARGETED_DEVICE_FAMILY: "1,2"
         SKIP_INSTALL: YES

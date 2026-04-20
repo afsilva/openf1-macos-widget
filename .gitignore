@@ -38,6 +38,22 @@ fastlane/test_output
 *.tmp
 *.orig
 
+# Signing/secrets (never commit)
+*.p12
+*.pfx
+*.mobileprovision
+*.provisionprofile
+*.cer
+*.crt
+*.key
+*.pem
+*.p8
+AuthKey_*.p8
+*.jks
+*.keystore
+.env
+.env.*
+
 # Local helper folders used during iterative debugging
 XcodeProjectTemplate/.dd-clean/
 XcodeProjectTemplate/.dd-icon-refresh/
