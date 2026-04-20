@@ -57,11 +57,12 @@ openf1-macos-widget/
     OpenF1DashboardiOSWidget/*       # active
     OpenF1Shared/*
 
-  # Obsolete native macOS runtime paths (deprecated)
-  OpenF1HostApp/
-  OpenF1Widget/
-  XcodeProjectTemplate/OpenF1DashboardApp/
-  XcodeProjectTemplate/OpenF1DashboardWidget/
+  # Obsolete native macOS paths moved to archive
+  _deprecated/runtime-macos/OpenF1HostApp/
+  _deprecated/runtime-macos/OpenF1Widget/
+  _deprecated/template-macos/OpenF1DashboardApp/
+  _deprecated/template-macos/OpenF1DashboardWidget/
+  _deprecated/docs/CLI_BUILD_MACOS.md
 ```
 
 ---
