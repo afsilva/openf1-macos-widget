@@ -55,6 +55,8 @@ Assessment result: **PASS (with low-risk notes)**
 - Endpoint-entry cap
 - Sanitized text output
 - App-group/shared defaults usage with safe fallbacks
+- Stale-cache rescue path for schedule/results/driver directory when transient API failures occur
+- Last-known-good standings reuse to avoid empty scoreboard regressions during refresh
 
 ## Residual risks / recommendations
 1. Keep app + widget entitlements minimal (principle of least privilege).

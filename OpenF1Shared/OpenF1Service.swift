@@ -114,12 +114,21 @@ public struct OpenF1Service {
                     apiUsed = meetingsResp.source == "API" || sessionsResp.source == "API"
                 } catch {
                     // Degrade gracefully: fallback to cached schedule data if API fails.
-                    meetings = endpointDecode(query: meetingsQ, maxAge: 7 * 24 * 60 * 60, cache: cache) ?? []
-                    sessions = endpointDecode(query: sessionsQ, maxAge: 7 * 24 * 60 * 60, cache: cache) ?? []
+                    // Prefer fresh cache, but allow stale rescue to avoid "No schedule data" on transient API failures.
+                    meetings = endpointDecode(query: meetingsQ, maxAge: 7 * 24 * 60 * 60, cache: cache)
+                        ?? endpointDecodeStale(query: meetingsQ, cache: cache)
+                        ?? []
+                    sessions = endpointDecode(query: sessionsQ, maxAge: 7 * 24 * 60 * 60, cache: cache)
+                        ?? endpointDecodeStale(query: sessionsQ, cache: cache)
+                        ?? []
                 }
             } else {
-                meetings = endpointDecode(query: meetingsQ, maxAge: 7 * 24 * 60 * 60, cache: cache) ?? []
-                sessions = endpointDecode(query: sessionsQ, maxAge: 7 * 24 * 60 * 60, cache: cache) ?? []
+                meetings = endpointDecode(query: meetingsQ, maxAge: 7 * 24 * 60 * 60, cache: cache)
+                    ?? endpointDecodeStale(query: meetingsQ, cache: cache)
+                    ?? []
+                sessions = endpointDecode(query: sessionsQ, maxAge: 7 * 24 * 60 * 60, cache: cache)
+                    ?? endpointDecodeStale(query: sessionsQ, cache: cache)
+                    ?? []
             }
 
             let cal = buildCalendarView(meetings: meetings, sessions: sessions, now: now)
@@ -158,6 +167,23 @@ public struct OpenF1Service {
                 } catch {
                     // Keep empty standings text if fallback also fails.
                 }
+            }
+
+            // If standings still empty, prefer last known-good standings rows over "No completed race results yet".
+            if standingsDrivers.isEmpty, standingsTeams.isEmpty, let lastGood = cache.lastGoodModel {
+                let model = WidgetViewModel(
+                    panelTitle: cal.title,
+                    subtitle: cal.subtitle,
+                    calendarRows: cal.rows,
+                    driverRows: lastGood.driverRows,
+                    teamRows: lastGood.teamRows,
+                    refreshSource: cache.meta.lastRefreshSource,
+                    lastUpdated: cache.meta.lastRefreshTs > 0 ? Date(timeIntervalSince1970: cache.meta.lastRefreshTs) : lastGood.lastUpdated
+                )
+                cache.lastGoodModel = model
+                saveCache(cache)
+                let nextRefreshInterval = max(cache.meta.refreshInterval, 15 * 60)
+                return DashboardPayload(model: model, refreshInterval: nextRefreshInterval)
             }
 
             let driverRows = formatDriverRows(standingsDrivers)
@@ -353,10 +379,11 @@ public struct OpenF1Service {
             let endDate = parseDate(s.date_end ?? s.date_start)
             let isPast = Date().timeIntervalSince(endDate) > 2 * 60 * 60
             let maxAge = isPast ? OpenF1Config.resultCacheSeconds : OpenF1Config.refreshWeekendSeconds
+            let resultsQuery = "session_result?session_key=\(s.session_key)"
 
             do {
                 let resultResp = try await fetchJSONCached(
-                    query: "session_result?session_key=\(s.session_key)",
+                    query: resultsQuery,
                     type: [SessionResult].self,
                     maxAge: maxAge,
                     forceApi: false,
@@ -387,6 +414,30 @@ public struct OpenF1Service {
                     cache.standings.sessionPoints[sk] = perSession
                 }
             } catch {
+                // If request fails, rescue from stale cached endpoint data for reliability.
+                if let staleResults: [SessionResult] = endpointDecodeStale(query: resultsQuery, cache: cache) {
+                    var perSession: [String: Double] = [:]
+                    for r in staleResults {
+                        guard let dn = r.driver_number else { continue }
+                        let points = r.points ?? 0
+                        let key = String(dn)
+                        perSession[key, default: 0] += points
+
+                        let dInfo = latestDirectory[key]
+                        let name = sanitize(r.full_name ?? r.broadcast_name ?? dInfo?.name ?? "#\(dn)")
+                        let team = sanitize(r.team_name ?? dInfo?.team ?? "Unknown Team")
+
+                        if cache.standings.driverInfo[key] == nil {
+                            cache.standings.driverInfo[key] = .init(name: name, team: team)
+                        } else {
+                            if cache.standings.driverInfo[key]?.name.hasPrefix("#") == true { cache.standings.driverInfo[key]?.name = name }
+                            if cache.standings.driverInfo[key]?.team == "Unknown Team" { cache.standings.driverInfo[key]?.team = team }
+                        }
+                    }
+                    if !perSession.isEmpty {
+                        cache.standings.sessionPoints[sk] = perSession
+                    }
+                }
                 // Keep processing other sessions; one failed endpoint should not erase standings.
                 continue
             }
@@ -446,16 +497,29 @@ public struct OpenF1Service {
     }
 
     private func loadDriverDirectory(sessionKey: Int, cache: inout CacheEnvelope) async throws -> [String: (name: String, team: String)] {
-        let resp = try await fetchJSONCached(
-            query: "drivers?session_key=\(sessionKey)",
-            type: [DriverDirectoryEntry].self,
-            maxAge: OpenF1Config.resultCacheSeconds,
-            forceApi: false,
-            cache: &cache
-        )
+        let query = "drivers?session_key=\(sessionKey)"
+
+        let entries: [DriverDirectoryEntry]
+        do {
+            let resp = try await fetchJSONCached(
+                query: query,
+                type: [DriverDirectoryEntry].self,
+                maxAge: OpenF1Config.resultCacheSeconds,
+                forceApi: false,
+                cache: &cache
+            )
+            entries = resp.value
+        } catch {
+            // Rescue from stale cache to avoid empty directory on transient refresh failures.
+            if let stale: [DriverDirectoryEntry] = endpointDecodeStale(query: query, cache: cache) {
+                entries = stale
+            } else {
+                throw error
+            }
+        }
 
         var map: [String: (name: String, team: String)] = [:]
-        for d in resp.value {
+        for d in entries {
             guard let dn = d.driver_number else { continue }
             let key = String(dn)
             let name = sanitize(d.full_name ?? d.broadcast_name ?? d.last_name ?? "#\(dn)")
@@ -573,6 +637,12 @@ public struct OpenF1Service {
     private func endpointDecode<T: Decodable>(query: String, maxAge: TimeInterval, cache: CacheEnvelope) -> T? {
         guard let entry = cache.endpoints[query] else { return nil }
         if Date().timeIntervalSince1970 - entry.ts > maxAge { return nil }
+        return try? JSONDecoder().decode(T.self, from: entry.data)
+    }
+
+    // Decode cached endpoint data regardless of age (stale rescue fallback).
+    private func endpointDecodeStale<T: Decodable>(query: String, cache: CacheEnvelope) -> T? {
+        guard let entry = cache.endpoints[query] else { return nil }
         return try? JSONDecoder().decode(T.self, from: entry.data)
     }
 

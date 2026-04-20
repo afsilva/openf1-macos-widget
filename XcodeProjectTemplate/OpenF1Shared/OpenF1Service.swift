@@ -68,140 +68,167 @@ public struct OpenF1Service {
     // MARK: - Public API
 
     public func buildDashboard(force: Bool = false, now: Date = Date()) async -> DashboardPayload {
-        var cache = loadCache()
-        let year = Calendar.current.component(.year, from: now)
+        do {
+            var cache = loadCache()
+            let year = Calendar.current.component(.year, from: now)
 
-        let meetingsQ = "meetings?year=\(year)"
-        let sessionsQ = "sessions?year=\(year)"
+            let meetingsQ = "meetings?year=\(year)"
+            let sessionsQ = "sessions?year=\(year)"
 
-        // Re-evaluate policy from cached schedule if possible
-        if
-            let cachedMeetings: [Meeting] = endpointDecode(query: meetingsQ, maxAge: 7 * 24 * 60 * 60, cache: cache),
-            let cachedSessions: [Session] = endpointDecode(query: sessionsQ, maxAge: 7 * 24 * 60 * 60, cache: cache)
-        {
-            cache.meta.refreshInterval = isRaceWeekend(meetings: cachedMeetings, sessions: cachedSessions, now: now)
+            // Re-evaluate policy from cached schedule if possible
+            if
+                let cachedMeetings: [Meeting] = endpointDecode(query: meetingsQ, maxAge: 7 * 24 * 60 * 60, cache: cache),
+                let cachedSessions: [Session] = endpointDecode(query: sessionsQ, maxAge: 7 * 24 * 60 * 60, cache: cache)
+            {
+                cache.meta.refreshInterval = isRaceWeekend(meetings: cachedMeetings, sessions: cachedSessions, now: now)
+                    ? OpenF1Config.refreshWeekendSeconds
+                    : OpenF1Config.refreshWeekSeconds
+                saveCache(cache)
+            }
+
+            let forced = force || consumeForceRefreshFlag()
+            let isDue = forced || ((now.timeIntervalSince1970 - cache.meta.lastRefreshTs) >= cache.meta.refreshInterval)
+
+            var meetings: [Meeting] = []
+            var sessions: [Session] = []
+            var apiUsed = false
+
+            if isDue {
+                do {
+                    let meetingsResp = try await fetchJSONCached(
+                        query: meetingsQ,
+                        type: [Meeting].self,
+                        maxAge: 24 * 60 * 60,
+                        forceApi: true,
+                        cache: &cache
+                    )
+                    let sessionsResp = try await fetchJSONCached(
+                        query: sessionsQ,
+                        type: [Session].self,
+                        maxAge: 24 * 60 * 60,
+                        forceApi: true,
+                        cache: &cache
+                    )
+                    meetings = meetingsResp.value
+                    sessions = sessionsResp.value
+                    apiUsed = meetingsResp.source == "API" || sessionsResp.source == "API"
+                } catch {
+                    // Degrade gracefully: fallback to cached schedule data if API fails.
+                    // Prefer fresh cache, but allow stale rescue to avoid "No schedule data" on transient API failures.
+                    meetings = endpointDecode(query: meetingsQ, maxAge: 7 * 24 * 60 * 60, cache: cache)
+                        ?? endpointDecodeStale(query: meetingsQ, cache: cache)
+                        ?? []
+                    sessions = endpointDecode(query: sessionsQ, maxAge: 7 * 24 * 60 * 60, cache: cache)
+                        ?? endpointDecodeStale(query: sessionsQ, cache: cache)
+                        ?? []
+                }
+            } else {
+                meetings = endpointDecode(query: meetingsQ, maxAge: 7 * 24 * 60 * 60, cache: cache)
+                    ?? endpointDecodeStale(query: meetingsQ, cache: cache)
+                    ?? []
+                sessions = endpointDecode(query: sessionsQ, maxAge: 7 * 24 * 60 * 60, cache: cache)
+                    ?? endpointDecodeStale(query: sessionsQ, cache: cache)
+                    ?? []
+            }
+
+            let cal = buildCalendarView(meetings: meetings, sessions: sessions, now: now)
+
+            var standingsDrivers: [StandingDriver] = []
+            var standingsTeams: [StandingTeam] = []
+            do {
+                let standings = try await buildStandings(sessions: sessions, now: now, cache: &cache)
+                apiUsed = apiUsed || standings.source == "API"
+                standingsDrivers = standings.drivers
+                standingsTeams = standings.teams
+            } catch {
+                // Keep calendar visible even if standings endpoints fail.
+                standingsDrivers = []
+                standingsTeams = []
+            }
+
+            // Fallback: if current season has no completed race-like sessions yet, try previous season standings.
+            if standingsDrivers.isEmpty && standingsTeams.isEmpty {
+                let previousYear = max(2018, year - 1)
+                let prevSessionsQ = "sessions?year=\(previousYear)"
+                do {
+                    let prevSessionsResp = try await fetchJSONCached(
+                        query: prevSessionsQ,
+                        type: [Session].self,
+                        maxAge: 7 * 24 * 60 * 60,
+                        forceApi: false,
+                        cache: &cache
+                    )
+                    let prevStandings = try await buildStandings(sessions: prevSessionsResp.value, now: now, cache: &cache)
+                    if !prevStandings.drivers.isEmpty || !prevStandings.teams.isEmpty {
+                        standingsDrivers = prevStandings.drivers
+                        standingsTeams = prevStandings.teams
+                        apiUsed = apiUsed || prevStandings.source == "API" || prevSessionsResp.source == "API"
+                    }
+                } catch {
+                    // Keep empty standings text if fallback also fails.
+                }
+            }
+
+            // If standings still empty, prefer last known-good standings rows over "No completed race results yet".
+            if standingsDrivers.isEmpty, standingsTeams.isEmpty, let lastGood = cache.lastGoodModel {
+                let model = WidgetViewModel(
+                    panelTitle: cal.title,
+                    subtitle: cal.subtitle,
+                    calendarRows: cal.rows,
+                    driverRows: lastGood.driverRows,
+                    teamRows: lastGood.teamRows,
+                    refreshSource: cache.meta.lastRefreshSource,
+                    lastUpdated: cache.meta.lastRefreshTs > 0 ? Date(timeIntervalSince1970: cache.meta.lastRefreshTs) : lastGood.lastUpdated
+                )
+                cache.lastGoodModel = model
+                saveCache(cache)
+                let nextRefreshInterval = max(cache.meta.refreshInterval, 15 * 60)
+                return DashboardPayload(model: model, refreshInterval: nextRefreshInterval)
+            }
+
+            let driverRows = formatDriverRows(standingsDrivers)
+            let teamRows = formatTeamRows(standingsTeams)
+
+            let interval = (!meetings.isEmpty && !sessions.isEmpty && isRaceWeekend(meetings: meetings, sessions: sessions, now: now))
                 ? OpenF1Config.refreshWeekendSeconds
                 : OpenF1Config.refreshWeekSeconds
+            cache.meta.refreshInterval = interval
+            cache.meta.lastRefreshTs = now.timeIntervalSince1970
+            cache.meta.lastRefreshSource = apiUsed ? "API" : "CACHE"
             saveCache(cache)
-        }
 
-        let forced = force || consumeForceRefreshFlag()
-        let isDue = forced || ((now.timeIntervalSince1970 - cache.meta.lastRefreshTs) >= cache.meta.refreshInterval)
+            let model = WidgetViewModel(
+                panelTitle: cal.title,
+                subtitle: cal.subtitle,
+                calendarRows: cal.rows,
+                driverRows: driverRows,
+                teamRows: teamRows,
+                refreshSource: cache.meta.lastRefreshSource,
+                lastUpdated: cache.meta.lastRefreshTs > 0 ? Date(timeIntervalSince1970: cache.meta.lastRefreshTs) : nil
+            )
 
-        var meetings: [Meeting] = []
-        var sessions: [Session] = []
-        var apiUsed = false
+            cache.lastGoodModel = model
+            saveCache(cache)
 
-        if isDue {
-            do {
-                let meetingsResp = try await fetchJSONCached(
-                    query: meetingsQ,
-                    type: [Meeting].self,
-                    maxAge: 24 * 60 * 60,
-                    forceApi: true,
-                    cache: &cache
-                )
-                let sessionsResp = try await fetchJSONCached(
-                    query: sessionsQ,
-                    type: [Session].self,
-                    maxAge: 24 * 60 * 60,
-                    forceApi: true,
-                    cache: &cache
-                )
-                meetings = meetingsResp.value
-                sessions = sessionsResp.value
-                apiUsed = meetingsResp.source == "API" || sessionsResp.source == "API"
-            } catch {
-                // Degrade gracefully: fallback to cached schedule data if API fails.
-                meetings = endpointDecode(query: meetingsQ, maxAge: 7 * 24 * 60 * 60, cache: cache) ?? []
-                sessions = endpointDecode(query: sessionsQ, maxAge: 7 * 24 * 60 * 60, cache: cache) ?? []
-            }
-        } else {
-            meetings = endpointDecode(query: meetingsQ, maxAge: 7 * 24 * 60 * 60, cache: cache) ?? []
-            sessions = endpointDecode(query: sessionsQ, maxAge: 7 * 24 * 60 * 60, cache: cache) ?? []
-        }
-
-        let cal = buildCalendarView(meetings: meetings, sessions: sessions, now: now)
-
-        var standingsDrivers: [StandingDriver] = []
-        var standingsTeams: [StandingTeam] = []
-        do {
-            let standings = try await buildStandings(sessions: sessions, now: now, cache: &cache)
-            apiUsed = apiUsed || standings.source == "API"
-            standingsDrivers = standings.drivers
-            standingsTeams = standings.teams
+            let nextRefreshInterval = max(cache.meta.refreshInterval, 15 * 60)
+            return DashboardPayload(model: model, refreshInterval: nextRefreshInterval)
         } catch {
-            // Keep calendar visible even if standings endpoints fail.
-            standingsDrivers = []
-            standingsTeams = []
-        }
-
-        // Fallback: if current season has no completed race-like sessions yet, try previous season standings.
-        if standingsDrivers.isEmpty && standingsTeams.isEmpty {
-            let previousYear = max(2018, year - 1)
-            let prevSessionsQ = "sessions?year=\(previousYear)"
-            do {
-                let prevSessionsResp = try await fetchJSONCached(
-                    query: prevSessionsQ,
-                    type: [Session].self,
-                    maxAge: 7 * 24 * 60 * 60,
-                    forceApi: false,
-                    cache: &cache
-                )
-                let prevStandings = try await buildStandings(sessions: prevSessionsResp.value, now: now, cache: &cache)
-                if !prevStandings.drivers.isEmpty || !prevStandings.teams.isEmpty {
-                    standingsDrivers = prevStandings.drivers
-                    standingsTeams = prevStandings.teams
-                    apiUsed = apiUsed || prevStandings.source == "API" || prevSessionsResp.source == "API"
-                }
-            } catch {
-                // Keep empty standings text if fallback also fails.
+            let cache = loadCache()
+            if let lastGood = cache.lastGoodModel {
+                return DashboardPayload(model: lastGood, refreshInterval: max(cache.meta.refreshInterval, 15 * 60))
             }
+
+            let fallback = WidgetViewModel(
+                panelTitle: "F1 !",
+                subtitle: "Data unavailable",
+                calendarRows: [.init(text: "Calendar unavailable (network/API error).", dim: false)],
+                driverRows: ["Standings unavailable"],
+                teamRows: ["Standings unavailable"],
+                refreshSource: "CACHE",
+                lastUpdated: nil
+            )
+            return DashboardPayload(model: fallback, refreshInterval: OpenF1Config.refreshWeekendSeconds)
         }
-
-        let driverRows = formatDriverRows(standingsDrivers)
-        let teamRows = formatTeamRows(standingsTeams)
-
-        let interval = (!meetings.isEmpty && !sessions.isEmpty && isRaceWeekend(meetings: meetings, sessions: sessions, now: now))
-            ? OpenF1Config.refreshWeekendSeconds
-            : OpenF1Config.refreshWeekSeconds
-        cache.meta.refreshInterval = interval
-        cache.meta.lastRefreshTs = now.timeIntervalSince1970
-        cache.meta.lastRefreshSource = apiUsed ? "API" : "CACHE"
-        saveCache(cache)
-
-        let model = WidgetViewModel(
-            panelTitle: cal.title,
-            subtitle: cal.subtitle,
-            calendarRows: cal.rows,
-            driverRows: driverRows,
-            teamRows: teamRows,
-            refreshSource: cache.meta.lastRefreshSource,
-            lastUpdated: cache.meta.lastRefreshTs > 0 ? Date(timeIntervalSince1970: cache.meta.lastRefreshTs) : nil
-        )
-
-        cache.lastGoodModel = model
-        saveCache(cache)
-
-        let nextRefreshInterval = max(cache.meta.refreshInterval, 15 * 60)
-        return DashboardPayload(model: model, refreshInterval: nextRefreshInterval)
-
-        // Fallback: if we reached here without returning (e.g., unexpected early exit), use last good model or a static placeholder.
-        let fallbackCache = loadCache()
-        if let lastGood = fallbackCache.lastGoodModel {
-            return DashboardPayload(model: lastGood, refreshInterval: max(fallbackCache.meta.refreshInterval, 15 * 60))
-        }
-
-        let fallback = WidgetViewModel(
-            panelTitle: "F1 !",
-            subtitle: "Data unavailable",
-            calendarRows: [.init(text: "Calendar unavailable (network/API error).", dim: false)],
-            driverRows: ["Standings unavailable"],
-            teamRows: ["Standings unavailable"],
-            refreshSource: "CACHE",
-            lastUpdated: nil
-        )
-        return DashboardPayload(model: fallback, refreshInterval: OpenF1Config.refreshWeekendSeconds)
     }
 
     public func requestManualRefresh() {
@@ -297,7 +324,7 @@ public struct OpenF1Service {
         }
 
         let flag = countryFlag(code: meeting.country_code)
-        _ = meeting.country_code ?? "N/A"
+        let code = meeting.country_code ?? "N/A"
         let location = sanitize(meeting.location ?? "Unknown")
         let name = sanitize(meeting.meeting_name ?? "Race Weekend")
 
@@ -352,10 +379,11 @@ public struct OpenF1Service {
             let endDate = parseDate(s.date_end ?? s.date_start)
             let isPast = Date().timeIntervalSince(endDate) > 2 * 60 * 60
             let maxAge = isPast ? OpenF1Config.resultCacheSeconds : OpenF1Config.refreshWeekendSeconds
+            let resultsQuery = "session_result?session_key=\(s.session_key)"
 
             do {
                 let resultResp = try await fetchJSONCached(
-                    query: "session_result?session_key=\(s.session_key)",
+                    query: resultsQuery,
                     type: [SessionResult].self,
                     maxAge: maxAge,
                     forceApi: false,
@@ -386,6 +414,30 @@ public struct OpenF1Service {
                     cache.standings.sessionPoints[sk] = perSession
                 }
             } catch {
+                // If request fails, rescue from stale cached endpoint data for reliability.
+                if let staleResults: [SessionResult] = endpointDecodeStale(query: resultsQuery, cache: cache) {
+                    var perSession: [String: Double] = [:]
+                    for r in staleResults {
+                        guard let dn = r.driver_number else { continue }
+                        let points = r.points ?? 0
+                        let key = String(dn)
+                        perSession[key, default: 0] += points
+
+                        let dInfo = latestDirectory[key]
+                        let name = sanitize(r.full_name ?? r.broadcast_name ?? dInfo?.name ?? "#\(dn)")
+                        let team = sanitize(r.team_name ?? dInfo?.team ?? "Unknown Team")
+
+                        if cache.standings.driverInfo[key] == nil {
+                            cache.standings.driverInfo[key] = .init(name: name, team: team)
+                        } else {
+                            if cache.standings.driverInfo[key]?.name.hasPrefix("#") == true { cache.standings.driverInfo[key]?.name = name }
+                            if cache.standings.driverInfo[key]?.team == "Unknown Team" { cache.standings.driverInfo[key]?.team = team }
+                        }
+                    }
+                    if !perSession.isEmpty {
+                        cache.standings.sessionPoints[sk] = perSession
+                    }
+                }
                 // Keep processing other sessions; one failed endpoint should not erase standings.
                 continue
             }
@@ -445,16 +497,29 @@ public struct OpenF1Service {
     }
 
     private func loadDriverDirectory(sessionKey: Int, cache: inout CacheEnvelope) async throws -> [String: (name: String, team: String)] {
-        let resp = try await fetchJSONCached(
-            query: "drivers?session_key=\(sessionKey)",
-            type: [DriverDirectoryEntry].self,
-            maxAge: OpenF1Config.resultCacheSeconds,
-            forceApi: false,
-            cache: &cache
-        )
+        let query = "drivers?session_key=\(sessionKey)"
+
+        let entries: [DriverDirectoryEntry]
+        do {
+            let resp = try await fetchJSONCached(
+                query: query,
+                type: [DriverDirectoryEntry].self,
+                maxAge: OpenF1Config.resultCacheSeconds,
+                forceApi: false,
+                cache: &cache
+            )
+            entries = resp.value
+        } catch {
+            // Rescue from stale cache to avoid empty directory on transient refresh failures.
+            if let stale: [DriverDirectoryEntry] = endpointDecodeStale(query: query, cache: cache) {
+                entries = stale
+            } else {
+                throw error
+            }
+        }
 
         var map: [String: (name: String, team: String)] = [:]
-        for d in resp.value {
+        for d in entries {
             guard let dn = d.driver_number else { continue }
             let key = String(dn)
             let name = sanitize(d.full_name ?? d.broadcast_name ?? d.last_name ?? "#\(dn)")
@@ -572,6 +637,12 @@ public struct OpenF1Service {
     private func endpointDecode<T: Decodable>(query: String, maxAge: TimeInterval, cache: CacheEnvelope) -> T? {
         guard let entry = cache.endpoints[query] else { return nil }
         if Date().timeIntervalSince1970 - entry.ts > maxAge { return nil }
+        return try? JSONDecoder().decode(T.self, from: entry.data)
+    }
+
+    // Decode cached endpoint data regardless of age (stale rescue fallback).
+    private func endpointDecodeStale<T: Decodable>(query: String, cache: CacheEnvelope) -> T? {
+        guard let entry = cache.endpoints[query] else { return nil }
         return try? JSONDecoder().decode(T.self, from: entry.data)
     }
 
