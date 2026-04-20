@@ -124,7 +124,7 @@ struct OpenF1iOSWidgetView: View {
                 .lineLimit(1)
 
             Text("Build \(buildStamp)")
-                .font(.caption2.monospaced())
+                .font(.system(size: 8, weight: .regular, design: .monospaced))
                 .foregroundStyle(.secondary)
                 .lineLimit(1)
 
@@ -132,10 +132,10 @@ struct OpenF1iOSWidgetView: View {
 
             ForEach(rowsForLarge, id: \.self) { row in
                 Text(row.text)
-                    .font(.system(size: 9, weight: .regular, design: .monospaced))
+                    .font(.system(size: 10, weight: .regular, design: .monospaced))
                     .foregroundStyle(row.dim ? .secondary : .primary)
                     .lineLimit(1)
-                    .minimumScaleFactor(0.78)
+                    .minimumScaleFactor(0.82)
             }
 
             Divider()

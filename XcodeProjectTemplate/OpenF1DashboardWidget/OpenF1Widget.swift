@@ -52,7 +52,7 @@ struct OpenF1Provider: AppIntentTimelineProvider {
 struct OpenF1WidgetView: View {
     var entry: OpenF1Provider.Entry
 
-    private let sessionFont = Font.system(size: 9, weight: .regular, design: .monospaced)
+    private let sessionFont = Font.system(size: 10, weight: .regular, design: .monospaced)
     private let standingsFont = Font.system(size: 10, weight: .regular, design: .monospaced)
     private let sectionHeaderFont = Font.system(size: 10, weight: .semibold, design: .monospaced)
 
@@ -80,7 +80,7 @@ struct OpenF1WidgetView: View {
                 .lineLimit(1)
 
             Text("Build \(buildStamp)")
-                .font(.caption2.monospaced())
+                .font(.system(size: 8, weight: .regular, design: .monospaced))
                 .foregroundStyle(.secondary)
                 .lineLimit(1)
 
@@ -99,7 +99,7 @@ struct OpenF1WidgetView: View {
                     .font(sessionFont)
                     .foregroundStyle(row.dim ? .secondary : .primary)
                     .lineLimit(1)
-                    .minimumScaleFactor(0.78)
+                    .minimumScaleFactor(0.82)
             }
 
             Divider()
