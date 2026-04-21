@@ -68,8 +68,7 @@ public struct OpenF1Service {
     // MARK: - Public API
 
     public func buildDashboard(force: Bool = false, now: Date = Date()) async -> DashboardPayload {
-        do {
-            var cache = loadCache()
+        var cache = loadCache()
             let year = Calendar.current.component(.year, from: now)
 
             let meetingsQ = "meetings?year=\(year)"
@@ -218,25 +217,8 @@ public struct OpenF1Service {
             cache.lastGoodModel = model
             saveCache(cache)
 
-            let nextRefreshInterval = max(cache.meta.refreshInterval, 15 * 60)
-            return DashboardPayload(model: model, refreshInterval: nextRefreshInterval)
-        } catch {
-            let cache = loadCache()
-            if let lastGood = cache.lastGoodModel {
-                return DashboardPayload(model: lastGood, refreshInterval: max(cache.meta.refreshInterval, 15 * 60))
-            }
-
-            let fallback = WidgetViewModel(
-                panelTitle: "F1 !",
-                subtitle: "Data unavailable",
-                calendarRows: [.init(text: "Calendar unavailable (network/API error).", dim: false)],
-                driverRows: ["Standings unavailable"],
-                teamRows: ["Standings unavailable"],
-                refreshSource: "CACHE",
-                lastUpdated: nil
-            )
-            return DashboardPayload(model: fallback, refreshInterval: OpenF1Config.refreshWeekendSeconds)
-        }
+        let nextRefreshInterval = max(cache.meta.refreshInterval, 15 * 60)
+        return DashboardPayload(model: model, refreshInterval: nextRefreshInterval)
     }
 
     public func requestManualRefresh() {
@@ -335,7 +317,6 @@ public struct OpenF1Service {
         }
 
         let flag = countryFlag(code: meeting.country_code)
-        let code = meeting.country_code ?? "N/A"
         let location = sanitize(meeting.location ?? "Unknown")
         let name = sanitize(meeting.meeting_name ?? "Race Weekend")
 
@@ -343,13 +324,20 @@ public struct OpenF1Service {
         rows.append(.init(text: "Sessions (Local / UTC / System):", dim: true))
 
         let tz = meeting.gmt_offset ?? "+00:00"
-        for s in selectedSessions.prefix(8) {
-            let marker = (nextSession?.session_key == s.session_key) ? "➡" : "•"
+        var seenRowKeys: Set<String> = []
+        for s in selectedSessions {
+            let parsedStart = parseDate(s.date_start)
             let short = abbreviateSessionName(s.session_name)
-            let local = formatWithOffset(parseDate(s.date_start), offset: tz)
-            let utc = formatUTC(parseDate(s.date_start))
-            let sys = formatLocal(parseDate(s.date_start))
+            let utc = formatUTC(parsedStart)
+            let rowKey = "\(short)|\(utc)"
+            if seenRowKeys.contains(rowKey) { continue }
+            seenRowKeys.insert(rowKey)
+
+            let marker = (nextSession?.session_key == s.session_key) ? "➡" : "•"
+            let local = formatWithOffset(parsedStart, offset: tz)
+            let sys = formatLocal(parsedStart)
             rows.append(.init(text: "\(marker) \(short): \(local) / \(utc) / \(sys)", dim: false))
+            if rows.count >= 9 { break } // header + up to 8 session rows
         }
 
         let title: String
