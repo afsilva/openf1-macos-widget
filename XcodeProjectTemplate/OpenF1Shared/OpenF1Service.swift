@@ -324,20 +324,39 @@ public struct OpenF1Service {
         rows.append(.init(text: "Sessions (Local / UTC / System):", dim: true))
 
         let tz = meeting.gmt_offset ?? "+00:00"
-        var seenRowKeys: Set<String> = []
+        var orderedKeys: [String] = []
+        var keyedRows: [String: (text: String, priority: Int)] = [:]
+
         for s in selectedSessions {
             let parsedStart = parseDate(s.date_start)
             let short = abbreviateSessionName(s.session_name)
-            let utc = formatUTC(parsedStart)
-            let rowKey = "\(short)|\(utc)"
-            if seenRowKeys.contains(rowKey) { continue }
-            seenRowKeys.insert(rowKey)
-
-            let marker = (nextSession?.session_key == s.session_key) ? "➡" : "•"
             let local = formatWithOffset(parsedStart, offset: tz)
+            let utc = formatUTC(parsedStart)
             let sys = formatLocal(parsedStart)
-            rows.append(.init(text: "\(marker) \(short): \(local) / \(utc) / \(sys)", dim: false))
-            if rows.count >= 9 { break } // header + up to 8 session rows
+
+            // Semantic row key: same label + same displayed timestamps should collapse to one row.
+            let rowKey = "\(short)|\(local)|\(utc)|\(sys)"
+            let isNext = (nextSession?.session_key == s.session_key)
+            let marker = isNext ? "➡" : "•"
+            let rendered = "\(marker) \(short): \(local) / \(utc) / \(sys)"
+            let priority = isNext ? 1 : 0
+
+            if let existing = keyedRows[rowKey] {
+                // Prefer the "next session" (arrow) variant when duplicates collide.
+                if priority > existing.priority {
+                    keyedRows[rowKey] = (rendered, priority)
+                }
+            } else {
+                orderedKeys.append(rowKey)
+                keyedRows[rowKey] = (rendered, priority)
+            }
+        }
+
+        for key in orderedKeys {
+            if let item = keyedRows[key] {
+                rows.append(.init(text: item.text, dim: false))
+                if rows.count >= 9 { break } // header + up to 8 session rows
+            }
         }
 
         let title: String
