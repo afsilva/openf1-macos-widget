@@ -177,11 +177,13 @@ public struct OpenF1Service {
             }
 
             // If standings still empty, prefer last known-good standings rows over "No completed race results yet".
+            let finalCalendarRows = dedupeCalendarRows(cal.rows)
+
             if standingsDrivers.isEmpty, standingsTeams.isEmpty, let lastGood = cache.lastGoodModel {
                 let model = WidgetViewModel(
                     panelTitle: cal.title,
                     subtitle: cal.subtitle,
-                    calendarRows: cal.rows,
+                    calendarRows: finalCalendarRows,
                     driverRows: lastGood.driverRows,
                     teamRows: lastGood.teamRows,
                     refreshSource: cache.meta.lastRefreshSource,
@@ -207,7 +209,7 @@ public struct OpenF1Service {
             let model = WidgetViewModel(
                 panelTitle: cal.title,
                 subtitle: cal.subtitle,
-                calendarRows: cal.rows,
+                calendarRows: finalCalendarRows,
                 driverRows: driverRows,
                 teamRows: teamRows,
                 refreshSource: cache.meta.lastRefreshSource,
@@ -722,6 +724,34 @@ public struct OpenF1Service {
             if seen.contains(identity) { continue }
             seen.insert(identity)
             out.append(s)
+        }
+
+        return out
+    }
+
+    private func dedupeCalendarRows(_ rows: [CalendarRow]) -> [CalendarRow] {
+        guard !rows.isEmpty else { return rows }
+        var out: [CalendarRow] = []
+        var seen: Set<String> = []
+
+        for (idx, row) in rows.enumerated() {
+            // Keep the first row (section header) as-is.
+            if idx == 0 {
+                out.append(row)
+                continue
+            }
+
+            // Canonicalize row text: ignore marker bullet/arrow and repeated spacing.
+            let canonical = row.text
+                .replacingOccurrences(of: "➡", with: "")
+                .replacingOccurrences(of: "•", with: "")
+                .replacingOccurrences(of: "\\s+", with: " ", options: .regularExpression)
+                .trimmingCharacters(in: .whitespacesAndNewlines)
+                .lowercased()
+
+            if seen.contains(canonical) { continue }
+            seen.insert(canonical)
+            out.append(row)
         }
 
         return out
