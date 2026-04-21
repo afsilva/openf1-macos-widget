@@ -2,7 +2,7 @@ import WidgetKit
 import SwiftUI
 import AppIntents
 
-private let buildStamp = "b2026.04.20-ios-008"
+private let buildStamp = "b2026.04.20-ios-009"
 
 struct OpenF1iOSWidgetConfigurationIntent: WidgetConfigurationIntent {
     static var title: LocalizedStringResource = "OpenF1 Widget Configuration"
@@ -56,13 +56,27 @@ struct OpenF1iOSWidgetView: View {
     private var isMedium: Bool { family == .systemMedium }
 
     private var rowsForLarge: [CalendarRow] {
-        let contextRows = Array(entry.model.calendarRows.prefix(2))
-        let detectedSessionRows = entry.model.calendarRows.filter {
+        let all = entry.model.calendarRows
+
+        let headerRows = all.filter {
+            let t = $0.text
+            return !(t.contains("➡") || t.contains("•"))
+        }
+
+        let detectedSessionRows = all.filter {
             let t = $0.text
             return (t.contains("➡") || t.contains("•")) && t.contains(":") && t.contains("/")
         }
-        let sessionRows = Array(detectedSessionRows.prefix(8))
-        return sessionRows.isEmpty ? Array(entry.model.calendarRows.prefix(10)) : (contextRows + sessionRows)
+
+        let uniqueSessionRows = dedupeRenderedRows(detectedSessionRows)
+        let limitedSessionRows = Array(uniqueSessionRows.prefix(8))
+
+        if limitedSessionRows.isEmpty {
+            return Array(all.prefix(10))
+        }
+
+        // Keep section header/context rows, but do not prepend rows that are already sessions.
+        return Array(headerRows.prefix(2)) + limitedSessionRows
     }
 
     private var nextSessionSummary: String {
@@ -212,6 +226,23 @@ struct OpenF1iOSWidgetView: View {
 
             Spacer(minLength: 0)
         }
+    }
+
+    private func dedupeRenderedRows(_ rows: [CalendarRow]) -> [CalendarRow] {
+        var out: [CalendarRow] = []
+        var seen: Set<String> = []
+        for row in rows {
+            let key = row.text
+                .replacingOccurrences(of: "➡", with: "")
+                .replacingOccurrences(of: "•", with: "")
+                .replacingOccurrences(of: "\\s+", with: " ", options: .regularExpression)
+                .trimmingCharacters(in: .whitespacesAndNewlines)
+                .lowercased()
+            if seen.contains(key) { continue }
+            seen.insert(key)
+            out.append(row)
+        }
+        return out
     }
 
     private func compactSession(_ row: String) -> String {
