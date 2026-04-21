@@ -266,6 +266,9 @@ public struct OpenF1Service {
         }
         for key in byMeeting.keys {
             byMeeting[key]?.sort { parseDate($0.date_start) < parseDate($1.date_start) }
+            if let sessionsForMeeting = byMeeting[key] {
+                byMeeting[key] = dedupeSessions(sessionsForMeeting)
+            }
         }
 
         let sortedMeetings = meetings.sorted { parseDate($0.date_start) < parseDate($1.date_start) }
@@ -696,6 +699,25 @@ public struct OpenF1Service {
         let regex = try! NSRegularExpression(pattern: "^[a-zA-Z0-9_=&.,:%+\\-]*$", options: [])
         let range = NSRange(location: 0, length: query.utf16.count)
         return regex.firstMatch(in: query, options: [], range: range) != nil
+    }
+
+    private func dedupeSessions(_ sessions: [Session]) -> [Session] {
+        var out: [Session] = []
+        var seen: Set<String> = []
+
+        for s in sessions {
+            let normalizedName = (s.session_name ?? "")
+                .lowercased()
+                .trimmingCharacters(in: .whitespacesAndNewlines)
+            let timeKey = String(Int(parseDate(s.date_start).timeIntervalSince1970))
+            let identity = "k:\(s.session_key)|n:\(normalizedName)|t:\(timeKey)"
+
+            if seen.contains(identity) { continue }
+            seen.insert(identity)
+            out.append(s)
+        }
+
+        return out
     }
 
     private func sharedDefaults() -> UserDefaults {
