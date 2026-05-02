@@ -61,6 +61,9 @@ With your group.
 - [ ] Test manual refresh button
 - [ ] Verify offline/cache fallback behavior
 - [ ] Verify medium and large layouts
+- [ ] Verify session row order is `System / Local / UTC`
+- [ ] Verify build stamp format is `bYYYY.MM.DD-ios-NNN`
+- [ ] If date changed, verify build counter reset to `001`
 
 ---
 

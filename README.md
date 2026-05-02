@@ -97,9 +97,17 @@ Update in code:
 - Cache-first refresh with fallback to last-known-good model
 - Manual refresh via widget intent button
 
+Session row order is standardized as:
+- **System / Local / UTC**
+
 Refresh policy:
 - daily off-weekend
 - hourly around race weekends
+
+Build stamp convention:
+- Format: `bYYYY.MM.DD-ios-NNN`
+- `NNN` increments for changes made on the same date
+- When the date changes, the counter resets to `001`
 
 ---
 

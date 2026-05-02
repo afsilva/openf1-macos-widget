@@ -92,5 +92,8 @@ Apply this to active iOS widget runtime and template copies.
 
 - Keep `XcodeProjectTemplate/project.yml` as source of truth for generated targets/settings.
 - Keep bundle IDs/team/app-group values configurable for local signing.
+- Do **not** commit `DEVELOPMENT_TEAM` or personal signing identifiers to git-tracked config.
 - Never commit signing secrets/profiles/cert files to git.
+- Build stamp must follow: `bYYYY.MM.DD-ios-NNN`, with daily reset (`NNN -> 001` on date change).
+- Session display order must remain: **System / Local / UTC**.
 - Treat `_deprecated/` as reference-only archive.
