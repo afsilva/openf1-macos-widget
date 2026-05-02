@@ -323,7 +323,7 @@ public struct OpenF1Service {
         let name = sanitize(meeting.meeting_name ?? "Race Weekend")
 
         var rows: [CalendarRow] = []
-        rows.append(.init(text: "Sessions (Local / UTC / System):", dim: true))
+        rows.append(.init(text: "Sessions (System / Local / UTC):", dim: true))
 
         let tz = meeting.gmt_offset ?? "+00:00"
         var orderedKeys: [String] = []
@@ -340,7 +340,7 @@ public struct OpenF1Service {
             let rowKey = "\(short)|\(local)|\(utc)|\(sys)"
             let isNext = (nextSession?.session_key == s.session_key)
             let marker = isNext ? "➡" : "•"
-            let rendered = "\(marker) \(short): \(local) / \(utc) / \(sys)"
+            let rendered = "\(marker) \(short): \(sys) / \(local) / \(utc)"
             let priority = isNext ? 1 : 0
 
             if let existing = keyedRows[rowKey] {
@@ -846,12 +846,13 @@ public struct OpenF1Service {
     }
 
     private func parseOffsetSeconds(_ offset: String) -> Int {
-        // Examples: +02:00, -05:30
+        // Supports: +02:00, -05:30, -04:00:00
         guard offset.count >= 6 else { return 0 }
         let sign = offset.hasPrefix("-") ? -1 : 1
         let parts = offset.dropFirst().split(separator: ":").map(String.init)
-        guard parts.count == 2, let hh = Int(parts[0]), let mm = Int(parts[1]) else { return 0 }
-        return sign * ((hh * 3600) + (mm * 60))
+        guard (parts.count == 2 || parts.count == 3), let hh = Int(parts[0]), let mm = Int(parts[1]) else { return 0 }
+        let ss = (parts.count == 3 ? Int(parts[2]) : 0) ?? 0
+        return sign * ((hh * 3600) + (mm * 60) + ss)
     }
 
     private func formattedRefresh(ts: TimeInterval) -> String {
