@@ -1,5 +1,7 @@
 import SwiftUI
 
+private let hostBuildStamp = "b2026.05.02-ios-002"
+
 @main
 struct OpenF1iOSHostApp: App {
     var body: some Scene {
@@ -12,6 +14,11 @@ struct OpenF1iOSHostApp: App {
 
                         Text("Add the OpenF1 widget from the iOS Home Screen widget gallery.")
                             .font(.system(size: 16))
+                            .fixedSize(horizontal: false, vertical: true)
+
+                        Text("Build \(hostBuildStamp)")
+                            .font(.system(size: 12, weight: .regular, design: .monospaced))
+                            .foregroundStyle(.secondary)
                             .fixedSize(horizontal: false, vertical: true)
 
                         Text("Data source: OpenF1 public API (https://api.openf1.org).")
